@@ -61,7 +61,7 @@ pub async fn auth(
     let url = "https://login.uber.com/oauth/v2/token";
     let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
 
-    let res = client.post(url)
+    let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .json(&request)
         .send()
@@ -96,7 +96,7 @@ pub struct CreateQuoteRequest {
     manifest_total_value: Option<u32>,
     external_store_id: Option<String>,
 }
-/// Create new quote for estimate between two locations
+/// Create a quote to check deliverability, validity and cost for delivery between two addresses.
 /// 
 /// # Request Path Parameters
 /// 
@@ -193,7 +193,7 @@ pub async fn create_quote(
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
-    let res = client.post(url)
+    let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
     .body(&request)
@@ -246,6 +246,7 @@ pub struct CreateDeliveryRequest {
     idempotency_key: Option<String>, 
     external_store_id: Option<String>,
     return_verification: Option<VerificationRequirement>,
+    test_specifications: Option<TestSpecifications>,
 }
 
 #[derive(Serialize)]
@@ -328,7 +329,17 @@ pub struct PackageRequirement {
 pub struct IdentificationRequirement {
     min_age: u32,
 }
-/// Create new delivery between two locations
+
+#[derive(Serialize)]
+pub struct TestSpecifications {
+    robo_courier_specification: RoboCourierSpecification,
+}
+
+#[derive(Serialize)]
+pub struct RoboCourierSpecification {
+    mode: String,
+}
+/// Create a delivery between two addresses.
 /// 
 /// # Request Path Parameters
 /// 
@@ -515,6 +526,7 @@ pub async fn create_delivery(
     idempotency_key: Option<&str>, 
     external_store_id: Option<&str>,
     return_verification: Option<VerificationRequirement>,
+    test_specifications: Option<TestSpecifications>,
     ) -> Result<String, Error> {
     let request = CreateDeliveryRequest {
         dropoff_address: dropoff_address.to_string(),
@@ -551,6 +563,7 @@ pub async fn create_delivery(
         idempotency_key: idempotency_key.map(|s| s.to_string()),
         external_store_id: external_store_id.map(|s| s.to_string()),
         return_verification,
+        test_specifications,
     };
 
     let client = Client::new();
@@ -562,7 +575,7 @@ pub async fn create_delivery(
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
-    let res = client.post(url)
+    let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
     .body(&request)
@@ -573,11 +586,338 @@ pub async fn create_delivery(
     Ok(text)
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 4. Get Delivery GET https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+/// Retrieve the current status of an existing delivery
+/// 
+/// # Request Path Parameters
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |customer_id	|string|	Unique identifier for the organization. Either UUID or starts with `cus_`.|
+/// |delivery_id	|string	|Unique identifier for the delivery. Always starts with `del_`.|
+
+pub async fn get_delivery(
+    access_token: &str,
+    customer_id: &str,
+    delivery_id: &str,
+    ) -> Result<String, Error> {
+
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries/{}",
+        customer_id,
+        delivery_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.get(&url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 5. Update Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+#[derive(Serialize)]
+pub struct UpdateDeliveryRequest {
+    dropoff_notes: Option<String>,
+    dropoff_seller_notes: Option<String>,
+    dropoff_verification: Option<VerificationRequirement>,
+    manifest_reference: Option<String>,
+    pickup_notes: Option<String>,
+    pickup_verification: Option<VerificationRequirement>,
+    requires_dropoff_signature: Option<bool>,
+    requires_id: Option<bool>,
+    tip_by_customer: Option<u32>,
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
+}
+/// Modify an ongoing delivery.
+/// 
+/// # Request Body Parameters
+/// 
+/// |Name|	Type	|Description|
+/// | :--- | :--- | :--- |
+/// |dropoff_notes|	string	|Additional instructions for the courier at the dropoff location. Max 280 characters.|
+/// |dropoff_seller_notes|	string|	Additional instructions provided by the merchant for the dropoff. Max 280 characters.|
+/// |dropoff_verification|	VerificationRequirement|	Verification steps (i.e. barcode scanning) that must be taken before the dropoff can be completed.|
+/// |manifest_reference	|string	|Reference that identifies the manifest. Use this to connect a delivery to corresponding information in your system.|
+/// |pickup_notes	|string|	Additional instructions for the courier at the pickup location. Max 280 characters.|
+/// |pickup_verification	|VerificationRequirement	|Verification steps (i.e. barcode scanning) that must be taken before the pickup can be completed.|
+/// |requires_dropoff_signature	|boolean|	Flag to indicate this delivery requires signature capture at dropoff.|
+/// |requires_id	|boolean	|Flag to indicate this delivery requires ID verification.|
+/// |tip_by_customer	|integer|	Amount in cents that will be paid to the courier as a tip.|
+/// |dropoff_latitude	|double|	Dropoff latitude coordinate.|
+/// |dropoff_longitude	|double|	Dropoff longitude coordinate.|
+/// 
+/// ### VerificationRequirement - docs at create_delivery
+/// 
+/// # Request Validity
+/// ### Business rules for when request will be valid:
+/// 
+/// |Parameter|	Delivery created|	Pickup started|	Pickup imminent|	Pickup complete|	Dropff started|	Dropoff imminent|	Dropoff complete|
+/// | :--- | :--- | :--- |:--- |:--- |:--- |:--- |:--- |
+/// |manifest reference|	edit|	edit|	-|	-|	-	|-	|-|
+/// |manifest items|	edit|	edit|	-	|-|	-|	-|	-|
+/// |dropoff_latitude|	edit|	edit|	-|	-|	-|	-|	-|
+/// |dropoff_longitude|	edit|	edit|	-|	-|	-|	-|	-|
+/// |pickup_notes|	edit|	edit|	-|	-	|-	|-	|-|
+/// |pickup_verification.barcodes|	edit	|edit|	edit|	-|	-	|-|	-|
+/// |dropoff_notes|	edit|	edit|	edit|	edit|	edit|	-|	-|
+/// |dropoff_seller_notes|	edit|	edit|	edit|	edit|	edit|	-|	-|
+/// |dropoff_verification.barcodes|	edit|	edit|	edit|	edit|	edit|	-|	-|
+/// |dropoff_verification.signature_requirement|	edit|	edit|	edit|	edit|	edit|	-|	-|
+/// |dropoff_verification.identification	remove|	remove|	remove|	remove|	remove|	-|	-|
+/// |dropoff_verification.pincodes|	edit	|edit|	edit|	edit	|edit|	-|	-|
+/// |tip_by_customer|	-|	-|	-|	-	|edit|	edit|	edit|
+/// 
+pub async fn update_delivery(
+    access_token: &str,
+    customer_id: &str,
+    delivery_id: &str,
+    dropoff_notes: Option<&str>,
+    dropoff_seller_notes: Option<&str>,
+    dropoff_verification: Option<VerificationRequirement>,
+    manifest_reference: Option<&str>,
+    pickup_notes: Option<&str>,
+    pickup_verification: Option<VerificationRequirement>,
+    requires_dropoff_signature: Option<bool>,
+    requires_id: Option<bool>,
+    tip_by_customer: Option<u32>,
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
+    ) -> Result<String, Error> {
+    let request = UpdateDeliveryRequest {
+        dropoff_notes: dropoff_notes.map(|s| s.to_string()),
+        dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
+        dropoff_verification,
+        manifest_reference: manifest_reference.map(|s| s.to_string()),
+        pickup_notes: pickup_notes.map(|s| s.to_string()),
+        pickup_verification,
+        requires_dropoff_signature,
+        requires_id,
+        tip_by_customer,
+        dropoff_latitude,
+        dropoff_longitude,
+    };
+
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries/{}",
+        customer_id,
+        delivery_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.post(&url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .body(&request)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 6. Cancel Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}/cancel
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+/// Cancel an ongoing or previously scheduled delivery.
+/// 
+/// # Endpoint Specific Errors
+/// 
+/// |Http Status Code|	Code	|Message|
+/// | :--- | :--- | :--- |
+/// |400	|noncancelable_delivery|	Delivery cannot be cancelled.|
+/// |404	|customer_not_cound|	Customer does not exist.|
+/// |404	|delivery_not_found|	The requested delivery does not exist.|
+/// |408	|request_timeout|	The request timed out.|
+/// |500	|unknown_error|	An unknown error happened.|
+/// |503	|service_unavailable	|Service is currently unavailable.|
+/// 
+pub async fn cancel_delivery(
+    access_token: &str,
+    customer_id: &str,
+    delivery_id: &str,
+    ) -> Result<String, Error> {
+
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries/{}/cancel",
+        customer_id,
+        delivery_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.post(&url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 7. List Deliveries GET https://api.uber.com/v1/customers/{customer_id}/deliveries
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+/// Receive update of information on a delivery
+/// 
+/// # Query Parameters
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |filter	|string	|Filter deliveries by delivery state. Valid values are: “pending”, “pickup”, “pickup_complete”, “dropoff”, “delivered”, “canceled”, “returned”, and “ongoing”.|
+/// |limit	|integer|	Maximum number of responses to return.|
+/// |Offset	|integer|	Offset of response objects for pagination.|
+/// 
+pub async fn list_deliveries(
+    access_token: &str,
+    customer_id: &str,
+    filter: Option<&str>,
+    limit:	Option<u32>,
+    offset:	Option<u32>,
+) -> Result<String, Error> {
+
+    let client = Client::new();
+    let mut url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries",
+        customer_id
+    );
+    if let Some(filter) = filter {
+        url = format!("{}?filter={}", url, filter.map(|s| s.to_string()));
+    }
+    if let Some(limit) = limit {
+        url = format!("{}&limit={}", url, limit);
+    }
+    if let Some(offset) = offset {
+        url = format!("{}&offset={}", url, offset);
+    }
+
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.get(&url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 8. POD Retrieval POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}/proof-of-delivery
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+#[derive(Serialize)]
+pub struct PODRetrievalRequest {
+    waypoint: String,
+    type_of_waypoint: String,
+}
+/// Return a Proof-of-Delivery (P.O.D.) File if verification requirement given in create delivery request
+/// 
+/// If a delivery is created with any verification requirements (e.g.: picture, signature or pincode), the resulting image file is made available to you through our proof-of-delivery endpoint. The endpoint will return a Proof-of-Delivery (P.O.D.) File – A long Base64 string that can be converted to a PNG image (Web Converter (External)). The image will include the following information:
+/// 
+/// - Delivery Status
+/// 
+/// - Delivery timestamp
+/// 
+/// - Uber Order ID
+/// 
+/// - External Order ID
+/// 
+/// - Proof Type
+/// 
+/// - Image (Signature image, picture image, or pincode value)
+/// 
+/// For the “signature” verification type, signer name or signer relationship will also be included if it is enabled for a delivery.
+/// 
+/// # Request Body Parameters - 
+/// 
+/// |Name	|Type|	Description|
+/// | :--- | :--- | :--- |
+/// |waypoint|	string|	Waypoint can be “pickup” or “dropoff” or “return”.|
+/// |type|string|	Type can be “picture” or “signature” or “pincode”.|
+/// 
+/// # Response Body Parameters
+/// 
+/// |Name	|Type|	Description|
+/// | :--- | :--- |
+/// |document|	string|	A long Base64 string representing the image.|
+/// 
+/// # Endpoint Specific Errors
+/// 
+/// |Http Status Code	|Code|	Message|
+/// | :--- | :--- | :--- |
+/// |404	|delivery_not_found	|Cannot find requested proof of delivery.|
+/// |400	|invalid_params|	Waypoint, type is invalid.|
+/// |404	|customer_not_cound	|Customer does not exist.|
+/// |500|	unknown_error|	An unknown error happened.|
+/// 
+pub async fn pod_retrieval(
+    access_token: &str,
+    customer_id: &str,
+    delivery_id: &str,
+    waypoint: &str,
+    type_of_waypoint: &str,
+    ) -> Result<String, Error> {
+    let request = PODRetrievalRequest {
+        waypoint: waypoint.to_string(),
+        type_of_waypoint: type_of_waypoint.to_string(),
+    };
+
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries/{}/proof-of-delivery",
+        customer_id,
+        delivery_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.post(&url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .body(&request)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
+
 // 9. Delivery Status Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: event.delivery_status
 // 10. Courier Update Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: event.courier_update
 
