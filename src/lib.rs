@@ -1,10 +1,29 @@
-use reqwest::Client;
+#[macro_use]
+extern crate serde_derive;
+
+use reqwest::{Client, Error};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
+use reqwest::header::AUTHORIZATION;
+use serde::{Serialize, Deserialize};
+use chrono::{DateTime, Local};
+
 
 // Auth
 
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 1. Auth: POST https://login.uber.com/oauth/v2/token
-/// Authentication - returns access token
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+#[derive(Serialize)]
+pub struct AuthRequest {
+    client_id: String,
+    client_secret: String,
+    grant_type: Option<String>,
+    scope: Option<String>,
+}
+/// Retrieve access token for authenticated user
 /// 
 /// # Input Parameters
 /// 
@@ -25,17 +44,26 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 /// | server_error      | The server returned an unknown error.         |
 /// | unauthorized      | Invalid OAuth 2.0 credentials provided.       |
 /// 
-pub async fn auth(client_id: &str, client_secret: &str, grant_type: Option<&str>, scope: Option<&str>) -> Result<String, reqwest::Error> {
+pub async fn auth(
+    client_id: &str,
+    client_secret: &str,
+    grant_type: Option<&str>, 
+    scope: Option<&str>
+) -> Result<String, Error> {
+    let request = AuthRequest {
+        client_id: client_id.to_string(),
+        client_secret: client_secret.to_string(),
+        grant_type: grant_type.map(|s| s.to_string()),
+        scope: scope.map(|s| s.to_string()),
+    };
+
     let client = Client::new();
     let url = "https://login.uber.com/oauth/v2/token";
-    let grant_type = grant_type.unwrap_or("client_credentials");
-    let scope = scope.unwrap_or("eats.deliveries");
-    let payload = format!("client_id={}&client_secret={}&grant_type={}&scope={}", client_id, client_secret, grant_type, scope);
     let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
 
     let res = client.post(url)
         .header(CONTENT_TYPE, content_type)
-        .body(payload)
+        .json(&request)
         .send()
         .await?;
 
@@ -45,8 +73,30 @@ pub async fn auth(client_id: &str, client_secret: &str, grant_type: Option<&str>
 
 // DaaS
 
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 2. Create Quote: # POST https://api.uber.com/v1/customers/{customer_id}/delivery_quotes
-/// Create Quote - returns quote details for trips betweeen two locations
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+#[derive(Serialize)]
+pub struct CreateQuoteRequest {
+    pickup_address: String,
+    dropoff_address: String,
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
+    dropoff_phone_number: Option<String>,
+    pickup_latitude: Option<f64>,
+    pickup_longitude: Option<f64>,
+    pickup_phone_number: Option<String>,
+    pickup_ready_dt: Option<String>,
+    pickup_deadline_dt: Option<String>,
+    dropoff_ready_dt: Option<String>,
+    dropoff_deadline_dt: Option<String>,
+    manifest_total_value: Option<u32>,
+    external_store_id: Option<String>,
+}
+/// Create new quote for estimate between two locations
 /// 
 /// # Request Path Parameters
 /// 
@@ -99,12 +149,187 @@ pub async fn auth(client_id: &str, client_secret: &str, grant_type: Option<&str>
 /// | 400 | pickup_ready_too_late | The pickup ready time needs to be within the next 30 days. |
 /// | 404 | customer_not_found | Customer does not exist.  |
 /// 
-pub async fn create_quote() {
+pub async fn create_quote(
+    access_token: &str,
+    customer_id: &str,
+    pickup_address: &str,
+    dropoff_address: &str,
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
+    dropoff_phone_number: Option<&str>,
+    pickup_latitude: Option<f64>,
+    pickup_longitude: Option<f64>,
+    pickup_phone_number: Option<&str>,
+    pickup_ready_dt: Option<&str>,
+    pickup_deadline_dt: Option<&str>,
+    dropoff_ready_dt: Option<&str>,
+    dropoff_deadline_dt: Option<&str>,
+    manifest_total_value: Option<u32>,
+    external_store_id: Option<&str>,
+) -> Result<String, Error> {
+    let request = CreateQuoteRequest {
+        pickup_address: pickup_address.to_string(),
+        dropoff_address: dropoff_address.to_string(),
+        dropoff_latitude,
+        dropoff_longitude,
+        dropoff_phone_number: dropoff_phone_number.map(|s| s.to_string()),
+        pickup_latitude,
+        pickup_longitude,
+        pickup_phone_number: pickup_phone_number.map(|s| s.to_string()),
+        pickup_ready_dt: pickup_ready_dt.map(|s| s.to_string()),
+        pickup_deadline_dt: pickup_deadline_dt.map(|s| s.to_string()),
+        dropoff_ready_dt: dropoff_ready_dt.map(|s| s.to_string()),
+        dropoff_deadline_dt: dropoff_deadline_dt.map(|s| s.to_string()),
+        manifest_total_value,
+        external_store_id: external_store_id.map(|s| s.to_string()),
+    };
 
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveryquotes",
+        customer_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.post(url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .body(&request)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////
 // 3. Create Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries
-///
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Structs:
+
+#[derive(Serialize)]
+pub struct CreateDeliveryRequest {
+    dropoff_address: String,
+    dropoff_name: String,
+    dropoff_phone_number: String,
+    manifest: String,
+    manifest_items: ManifestItem,
+    pickup_address: String,
+    pickup_name: String,
+    pickup_phone_number: String,
+    deliverable_action: Option<DeliverableAction>,
+    dropoff_business_name: Option<String>,
+    dropoff_latitude: Option<f64>, 
+    dropoff_longitude: Option<f64>, 
+    dropoff_notes: Option<String>,
+    dropoff_seller_notes: Option<String>,
+    dropoff_verification: Option<VerificationRequirement>,
+    manifest_reference: Option<String>,
+    manifest_total_value: Option<u32>,
+    pickup_business_name: Option<String>,
+    pickup_latitude: Option<f64>,
+    pickup_longitude: Option<f64>,
+    pickup_notes: Option<String>,
+    pickup_verification: Option<VerificationRequirement>,
+    quote_id: Option<String>,
+    undeliverable_action: Option<UndeliverableAction>,
+    pickup_ready_dt: Option<DateTime<Local>>,
+    pickup_deadline_dt: Option<DateTime<Local>>,
+    dropoff_ready_dt: Option<DateTime<Local>>,
+    dropoff_deadline_dt: Option<DateTime<Local>>,
+    requires_dropoff_signature: Option<bool>,
+    requires_id: Option<bool>,
+    tip: Option<u32>,
+    idempotency_key: Option<String>, 
+    external_store_id: Option<String>,
+    return_verification: Option<VerificationRequirement>,
+}
+
+#[derive(Serialize)]
+pub struct ManifestItem {
+    name: String,
+    quantity: u32,
+    size: Option<Size>,
+    dimensions: Option<Dimensions>,
+    price: Option<u32>,
+    must_be_upright: Option<bool>,
+    weight: Option<u32>,
+    perishability: Option<u32>,
+    preparation_time: u32,
+}
+
+#[derive(Serialize)]
+pub struct DeliverableAction {
+    deliverable_action_meet_at_door: String,
+    deliverable_action_leave_at_door: String,
+}
+
+#[derive(Serialize)]
+pub struct VerificationRequirement {
+    signature: Option<bool>,
+    signature_requirement: Option<SignatureRequirement>,
+    barcodes: Option<BarcodeRequirement>,
+    pincode: Option<PincodeRequirement>,
+    package: Option<PackageRequirement>,
+    identification: Option<IdentificationRequirement>,
+    picture: Option<bool>,
+}
+
+#[derive(Serialize)]
+pub struct UndeliverableAction {
+    leave_at_door: String,
+    return_order: String,
+}
+
+#[derive(Serialize)]
+pub struct Size {
+    small: String,
+    medium: String,
+    large: String,
+    xlarge: String,
+}
+
+#[derive(Serialize)]
+pub struct Dimensions {
+    length: Option<u32>,
+    height: Option<u32>,
+    depth: Option<u32>,
+}
+
+#[derive(Serialize)]
+pub struct SignatureRequirement {
+    enabled: bool,
+    collect_signer_name: bool,
+    collect_signer_relationship: bool,
+}
+
+#[derive(Serialize)]
+pub struct BarcodeRequirement {
+    value: String,
+    type_of_barcode: String,
+}
+
+#[derive(Serialize)]
+pub struct PincodeRequirement {
+    enabled: bool,
+    value: String,
+}
+
+#[derive(Serialize)]
+pub struct PackageRequirement {
+    bag_count: u32,
+    drink_count: u32,
+}
+
+#[derive(Serialize)]
+pub struct IdentificationRequirement {
+    min_age: u32,
+}
+/// Create new delivery between two locations
+/// 
 /// # Request Path Parameters
 /// 
 /// | Name        | Type   | Description                                                                |
@@ -159,6 +384,194 @@ pub async fn create_quote() {
 /// | state | string |  |
 /// | zip_code | string |  |
 /// | country | string | (optional) |
+/// 
+/// # Request Body Parameters - ManifestItem
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |name|	string|	Description of item.|
+/// |quantity|	integer|	Quantity of items.|
+/// |size|	Size|	Approximate size of item. Specifying `xlarge` will cause dispatch to only couriers using a car or larger (no walkers/bikes/scooters/etc…).|
+/// |dimensions|	Dimensions	|[optional] Struct that contains dimensions|
+/// |price|	integer|	[optional] The price of the item. The value passed in should be based on 0.01 unit of the local currency. For example, in the US, a value of 1 would mean a cent ($0.01), and a value of 100 would mean a dollar ($1.00).|
+/// |must_be_upright|	boolean|	[optional] Whether the item should be in upright position (box of pizza, bottle of milk etc)|
+/// |weight|	integer|	[optional] Weight in grams|
+/// |perishability|	integer	|[optional] Perishability represents the number of minutes before an item expires. For example, an ice cream might have a perishability of 15 minutes from pickup|
+/// |preparation_time|	integer|	[optional] How long a given item takes to prepare (in minutes)|
+/// 
+/// ### ManifestItem - Size
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |small	|string	|You can carry it with one hand e.g. bottle of water.|
+/// |medium	|string	|You need a tote bag to carry it e.g. retail bag.|
+/// |large	|string	|You need two hands to carry it e.g. computer monitor.|
+/// |xlarge	|string	|You will need to make multiple trips to/from a vehicle to transport e.g. grocery order. Specifying `xlarge` will cause dispatch to only couriers using a car or larger (no walkers/bikes/scooters/etc…).|
+/// |big	|string	|[DEPRECATED] Same as large.|
+/// 
+/// ### ManifestItem - Dimensions
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |length	|integer	|[optional] Length in centimeters|
+/// |height	|integer	|[optional] Height in centimeters|
+/// |depth	|integer	|[optional] Depth in centimeters|
+/// 
+/// # Request Body Parameters - DeliverableAction
+/// 
+/// |Name|	Type|	Description|
+/// | :--- | :--- | :--- |
+/// |deliverable_action_meet_at_door|	string|	Meet at door delivery. This is the default if DeliverableAction is not set.|
+/// |deliverable_action_leave_at_door|	string	|The “happy path” action for the courier to take on a delivery. When used, delivery action can be set to “leave at door” for a contactless delivery. Cannot leave at door when signature or ID verification requirements are applied when creating a delivery. Photo confirmation of delivery will be automatically applied as a requirement to complete drop-off.|
+/// 
+/// # Request Body Parameters - VerificationRequirement
+/// 
+/// |Name	|Type|	Description|
+/// | :--- | :--- | :--- |
+/// |signature|	boolean|	[DEPRECATED] Flag for if a signature is required at this waypoint. signature_requirement should be used instead.|
+/// |signature_requirement|	SignatureRequirement[]	|Signature requirement spec to indicate that a signature must be collected at this waypoint.|
+/// |barcodes	|BarcodeRequirement[]|	Barcode values/types that must be scanned at the waypoint. Number of elements in the array is equal to the number of barcodes that must be scanned.|
+/// |pincode|	PincodeRequirement|	Pincode requirement spec to indicate a delivery requires pincode confirmation upon delivery|
+/// |package	|PackageRequirement	|Package verifications required for this waypoint.|
+/// |identification	|IdentificationRequirement	|Identification scanning/verification requirements for this waypoint…|
+/// |picture	|boolean| |
+/// 
+/// ### VerificationRequirement - SignatureRequirement
+/// 
+/// |Name|	Type|	Description|
+/// | :--- | :--- | :--- |
+/// |enabled	|boolean	|Flag for if a signature is required at this waypoint.|
+/// |collect_signer_name|	boolean|	Flag for if the signer’s name is required at this waypoint.|
+/// |collect_signer_relationship|	boolean|	Flag for if the signer’s relationship to the intended recipient is required at this waypoint.|
+/// 
+/// ### VerificationRequirement - BarcodeRequirement
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |value	|string	|String value encoded in the barcode.|
+/// |type	|string	|Type of barcode. Valid values: “CODE39”, “CODE39_FULL_ASCII”, “CODE128”, “QR”.|
+/// 
+/// ### VerificationRequirement - PincodeRequirement
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |enabled	|bool	|When set to true in POST requests, the delivery will require pincode entry at handoff.|
+/// |value	|string	|The pincode that the customer must present at dropoff. This field will be ignored in the CreateDelivery requests, and the pin code is internally generated when this requirement is present.|
+/// 
+/// ### VerificationRequirement - PackageRequirement
+/// 
+/// |Name	|Type	|Description|
+/// | :--- | :--- | :--- |
+/// |bag_count	|integer	|Number of bags to be picked up.|
+/// |drink_count	|integer	|Number of drinks to be picked up.|
+/// 
+/// ### VerificationRequirement - IdentificationRequirement
+///
+/// |Name	|Type|	Description|
+/// | :--- | :--- | :--- |
+/// |min_age	|integer|	Minimum age that must be verified for this delivery.|
+/// 
+/// # Request Body Parameters - UndeliverableAction
+/// 
+/// |Name	|Type|	Description|
+/// | :--- | :--- | :--- |
+/// |leave_at_door|	string	|Specify the “unhappy path” action for the courier to take on a delivery once a normal delivery attempt is made and a customer is not available. Cannot leave at door when signature or ID verification requirements are applied when creating a delivery. Photo confirmation of delivery will be automatically applied as a requirement to complete drop-off.|
+/// |return|	string	|Specify the “unhappy path” action for the courier to take on a delivery once a normal delivery attempt is made and a customer is not available. This action requests the courier to return the delivery to the pickup waypoint.|
+/// 
+pub async fn create_delivery(
+    access_token: &str,
+    customer_id: &str,
+    dropoff_address: &str,
+    dropoff_name: &str,
+    dropoff_phone_number: &str,
+    manifest: &str,
+    manifest_items: ManifestItem,
+    pickup_address: &str,
+    pickup_name: &str,
+    pickup_phone_number: &str,
+    deliverable_action: Option<DeliverableAction>,
+    dropoff_business_name: Option<&str>,
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
+    dropoff_notes: Option<&str>,
+    dropoff_seller_notes: Option<&str>,
+    dropoff_verification: Option<VerificationRequirement>,
+    manifest_reference: Option<&str>,
+    manifest_total_value: Option<u32>,
+    pickup_business_name: Option<&str>,
+    pickup_latitude: Option<f64>,
+    pickup_longitude: Option<f64>,
+    pickup_notes: Option<&str>,
+    pickup_verification: Option<VerificationRequirement>,
+    quote_id: Option<&str>,
+    undeliverable_action: Option<UndeliverableAction>,
+    pickup_ready_dt: Option<DateTime<Local>>,
+    pickup_deadline_dt: Option<DateTime<Local>>,
+    dropoff_ready_dt: Option<DateTime<Local>>,
+    dropoff_deadline_dt: Option<DateTime<Local>>,
+    requires_dropoff_signature: Option<bool>,
+    requires_id: Option<bool>,
+    tip: Option<u32>,
+    idempotency_key: Option<&str>, 
+    external_store_id: Option<&str>,
+    return_verification: Option<VerificationRequirement>,
+    ) -> Result<String, Error> {
+    let request = CreateDeliveryRequest {
+        dropoff_address: dropoff_address.to_string(),
+        dropoff_name: dropoff_name.to_string(),
+        dropoff_phone_number: dropoff_phone_number.to_string(),
+        manifest: manifest.to_string(),
+        manifest_items,
+        pickup_address: pickup_address.to_string(),
+        pickup_name: pickup_name.to_string(),
+        pickup_phone_number: pickup_phone_number.to_string(),
+        deliverable_action,
+        dropoff_business_name: dropoff_business_name.map(|s| s.to_string()),
+        dropoff_latitude,
+        dropoff_longitude,
+        dropoff_notes: dropoff_notes.map(|s| s.to_string()),
+        dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
+        dropoff_verification,
+        manifest_reference: manifest_reference.map(|s| s.to_string()),
+        manifest_total_value,
+        pickup_business_name: pickup_business_name.map(|s| s.to_string()),
+        pickup_latitude,
+        pickup_longitude,
+        pickup_notes: pickup_notes.map(|s| s.to_string()),
+        pickup_verification,
+        quote_id: quote_id.map(|s| s.to_string()),
+        undeliverable_action,
+        pickup_ready_dt,
+        pickup_deadline_dt,
+        dropoff_ready_dt,
+        dropoff_deadline_dt,
+        requires_dropoff_signature,
+        requires_id,
+        tip,
+        idempotency_key: idempotency_key.map(|s| s.to_string()),
+        external_store_id: external_store_id.map(|s| s.to_string()),
+        return_verification,
+    };
+
+    let client = Client::new();
+    let url = format!(
+        "https://api.uber.com/v1/customers/{}/deliveries",
+        customer_id
+    );
+    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let auth_header = format!("Bearer {}", access_token);
+    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+
+    let res = client.post(url)
+    .header(CONTENT_TYPE, content_type)
+    .header(AUTHORIZATION, authorization)
+    .body(&request)
+    .send()
+    .await?;
+
+    let text = res.text().await?;
+    Ok(text)
+}
 
 // 4. Get Delivery GET https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
 // 5. Update Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
