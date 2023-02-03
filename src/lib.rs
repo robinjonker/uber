@@ -6,7 +6,6 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
 use serde::{Serialize, Deserialize, Serializer};
 use chrono::{DateTime, Local};
-use chrono::prelude::*;
 
 
 // Auth
@@ -61,7 +60,7 @@ pub async fn auth(
 
     let client = Client::new();
     let url = "https://login.uber.com/oauth/v2/token";
-    let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
+    let content_type = HeaderValue::from_str("application/json").unwrap();
 
     let res = client.post(&*url)
         .header(CONTENT_TYPE, content_type)
@@ -275,17 +274,27 @@ pub struct CreateDeliveryRequest {
     test_specifications: Option<TestSpecifications>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 pub struct ManifestItem {
-    name: String,
-    quantity: u32,
-    size: Option<Size>,
-    dimensions: Option<Dimensions>,
-    price: Option<u32>,
-    must_be_upright: Option<bool>,
-    weight: Option<u32>,
-    perishability: Option<u32>,
-    preparation_time: u32,
+    pub name: String,
+    pub quantity: u32,
+    pub size: Option<Size>,
+    pub dimensions: Option<Dimensions>,
+    pub price: Option<u32>,
+    pub must_be_upright: Option<bool>,
+    pub weight: Option<u32>,
+    pub perishability: Option<u32>,
+    pub preparation_time: u32,
+}
+impl ManifestItem {
+    pub fn new<T: Into<String>>(name: T, quantity: u32, preparation_time: u32) -> Self {
+        ManifestItem {
+            name: name.into(),
+            quantity,
+            preparation_time,
+            ..Default::default()
+        }
+    }
 }
 
 #[derive(Serialize)]

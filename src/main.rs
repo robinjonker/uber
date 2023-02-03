@@ -2,40 +2,51 @@ use dotenv::dotenv;
 use uber::{ManifestItem, TestSpecifications, RoboCourierSpecification, create_delivery, auth};
 use std::env;
 
-fn main() {
-    dotenv().ok();
-    let secret_code = env::var("customer_id").expect("SECRET_CODE must be set");
-    println!("The secret code is: {}", secret_code);
 
+use clap::Parser;
+
+#[derive(clap::StructOpt, Debug)]
+#[structopt(
+about = "Uber client",
+name = "uber-client",
+version = "0.1.0",
+)]
+struct CmdArgs {
+    #[structopt(long)]
+    client_id: String,
+    #[structopt(long)]
+    client_secret: String,
+    #[structopt(long)]
+    customer_id: String,
+}
+
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let CmdArgs {
+        client_id, client_secret, customer_id,
+    } = CmdArgs::parse();
+
+    println!(" client id => {}\n client_secret => {}\n customer_id => {}", client_id, client_secret, customer_id);
     let mut access_key = auth(
-        env::var("client_id"),
-        env::var("client_secret"),
-        None, 
-        None,
-    );
-    
+        &client_id,
+        &client_secret,
+
+        Some("client_credentials".into()), Some("eats.deliveries".into())
+    ).await?;
+
     // &impl Future<Output = Result<String, reqwest::error::Error>>`
-
-    println!("{:#?}", access_key);
-
-    let customer_id = env::var("customer_id")?;
+    // {}     Display
+    // {:?}   Debug
+    // {:#?}  Debug formatted
+    println!("Access Key: => '{}'", access_key);
 
     let dropoff_address = "123 Main St, San Francisco, CA, 94103";
     let dropoff_name = "Dropoff Location";
     let dropoff_phone_number = "+1-555-555-5555";
     let manifest = "Delivery items";
 
-    let mut manifest_items = ManifestItem {
-        name: "Robin".to_owned(),
-        quantity: 1,
-        preparation_time: 10,
-        size: None,
-        dimensions: None,
-        price: None,
-        must_be_upright: None,
-        weight: None,
-        perishability: None,
-    };
+    let mut manifest_items = ManifestItem::new("Robin", 1, 5);
 
     let pickup_address = "456 Market St, San Francisco, CA, 94103";
     let pickup_name = "Pickup Location";
@@ -57,32 +68,37 @@ fn main() {
         &pickup_address,
         &pickup_name,
         &pickup_phone_number,
-        None, 
-        None, 
-        None, 
         None,
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
         None,
-        None, 
-        None, 
-        None, 
-        None, 
         None,
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
-        None, 
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
         Some(test_specifications),
-    );
+    ).await?;
+
+    println!(" Response => {}", response);
+    Ok(())
 }
+
+
