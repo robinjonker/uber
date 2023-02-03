@@ -220,7 +220,7 @@ impl Serialize for LocalDateTime {
         where
             S: Serializer,
     {
-        serializer.collect_str(&format!("{}", self.0.format("%d/%m/%Y %H:%M")))
+        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12 07:20:50.52Z
     }
 }
 
@@ -235,7 +235,6 @@ impl From<LocalDateTime> for DateTime<Local> {
         value.0
     }
 }
-
 
 #[derive(Serialize)]
 pub struct CreateDeliveryRequest {
@@ -359,12 +358,12 @@ pub struct IdentificationRequirement {
 
 #[derive(Serialize)]
 pub struct TestSpecifications {
-    robo_courier_specification: RoboCourierSpecification,
+    pub robo_courier_specification: RoboCourierSpecification,
 }
 
 #[derive(Serialize)]
 pub struct RoboCourierSpecification {
-    mode: String,
+    pub mode: String,
 }
 
 /// Create a delivery between two addresses.
