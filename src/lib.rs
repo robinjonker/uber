@@ -4,8 +4,9 @@ extern crate serde_derive;
 use reqwest::{Client, Error};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
-use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize, Serializer, SerializeStruct};
 use chrono::{DateTime, Local};
+use chrono::prelude::*;
 
 
 // Auth
@@ -61,7 +62,7 @@ pub async fn auth(
     let url = "https://login.uber.com/oauth/v2/token";
     let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
 
-    let res = client.post(&url)
+    let res = client.post(&*url)
         .header(CONTENT_TYPE, content_type)
         .json(&request)
         .send()
@@ -196,7 +197,7 @@ pub async fn create_quote(
     let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
-    .body(&request)
+    .json(&request)
     .send()
     .await?;
 
@@ -209,6 +210,28 @@ pub async fn create_quote(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Structs:
+
+pub struct LocalDateTime (DateTime<Local>);
+
+impl Serialize for LocalDateTime {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            
+            //  let mut s = serializer.serialize_value("Person", 3)?;
+            //  s.serialize_field("name", &self.name)?;
+            //  s.serialize_field("age", &self.age)?;
+            //  s.serialize_field("phones", &self.phones)?;
+            //  s.end()
+            //let date_time: DateTime<Utc> = Utc.with_ymd_and_hms(2017, 04, 02, 12, 50, 32).unwrap();
+            let formatted = format!("{}", self.0.format("%d/%m/%Y %H:%M"));
+            let mut x = serializer.serialize_str(&formatted)?;
+            x.end()
+        }
+}
+
+
 
 #[derive(Serialize)]
 pub struct CreateDeliveryRequest {
@@ -578,7 +601,7 @@ pub async fn create_delivery(
     let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
-    .body(&request)
+    .json(&request)
     .send()
     .await?;
 
@@ -728,7 +751,7 @@ pub async fn update_delivery(
     let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
-    .body(&request)
+    .json(&request)
     .send()
     .await?;
 
@@ -811,7 +834,7 @@ pub async fn list_deliveries(
         customer_id
     );
     if let Some(filter) = filter {
-        url = format!("{}?filter={}", url, filter.map(|s| s.to_string()));
+        url = format!("{}?filter={}", url, filter);
     }
     if let Some(limit) = limit {
         url = format!("{}&limit={}", url, limit);
@@ -910,7 +933,7 @@ pub async fn pod_retrieval(
     let res = client.post(&url)
     .header(CONTENT_TYPE, content_type)
     .header(AUTHORIZATION, authorization)
-    .body(&request)
+    .json(&request)
     .send()
     .await?;
 
