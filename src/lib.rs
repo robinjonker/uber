@@ -4,7 +4,7 @@ extern crate serde_derive;
 use reqwest::{Client, Error};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
-use serde::{Serialize, Deserialize, Serializer, SerializeStruct};
+use serde::{Serialize, Deserialize, Serializer};
 use chrono::{DateTime, Local};
 use chrono::prelude::*;
 
@@ -24,19 +24,20 @@ pub struct AuthRequest {
     grant_type: Option<String>,
     scope: Option<String>,
 }
+
 /// Retrieve access token for authenticated user
-/// 
+///
 /// # Input Parameters
-/// 
+///
 /// | Parameter                | Description                                                                                                                                                                             |
 /// |--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 /// | client_id                | The Client ID of your application, retrieved from the Direct Dashboard.                                                                                                                 |
 /// | client_secret            | The Client Secret of your application. This should be treated like your application password.                                                                                           |
 /// | grant_type               | To access the Uber Direct API, authenticate your application by setting this to the client_credentials grant type. This will create an OAuth 2.0 access token with the specified scope. |
 /// | scope                    | Specifies the Uber developer endpoints that this token has access to. For Uber Direct, the scope will always be “eats.deliveries”.                                                      |
-/// 
+///
 /// # Authentication Error Codes
-/// 
+///
 /// | Parameter         | Description                                   |
 /// |-------------------|-----------------------------------------------|
 /// | invalid_request   | Required parameters were not provided.        |
@@ -44,12 +45,12 @@ pub struct AuthRequest {
 /// | invalid_scope     | The scope provided is invalid                 |
 /// | server_error      | The server returned an unknown error.         |
 /// | unauthorized      | Invalid OAuth 2.0 credentials provided.       |
-/// 
+///
 pub async fn auth(
     client_id: &str,
     client_secret: &str,
-    grant_type: Option<&str>, 
-    scope: Option<&str>
+    grant_type: Option<&str>,
+    scope: Option<&str>,
 ) -> Result<String, Error> {
     let request = AuthRequest {
         client_id: client_id.to_string(),
@@ -97,16 +98,17 @@ pub struct CreateQuoteRequest {
     manifest_total_value: Option<u32>,
     external_store_id: Option<String>,
 }
+
 /// Create a quote to check deliverability, validity and cost for delivery between two addresses.
-/// 
+///
 /// # Request Path Parameters
-/// 
+///
 /// | Name        | Type   | Description                                                                |
 /// |-------------|--------|----------------------------------------------------------------------------|
 /// | customer_id | string | Unique identifier for the organization. Either UUID or starts with `cus_`. |
-/// 
+///
 /// # Request Body Parameters
-/// 
+///
 /// | Name | Type | Description |
 /// | :--- | :--- | :--- |
 /// | dropoff_address | string | (required) Dropoff address in Street Address, City, State, Zip format
@@ -123,9 +125,9 @@ pub struct CreateQuoteRequest {
 /// | dropoff_deadline_dt | timestamp (RFC 3339) | End of the window when an order must be dropped off. Must be at least 20 mins later than dropoff_ready_dt and must be greater than or equal to pickup_deadline_dt. |
 /// | manifest_total_value | integer | Value (in US cents) of the items in the delivery. i.e.: $10.99 => 1099. |
 /// | external_store_id | string | (Optional) Unique identifier used by our Partners to reference a Store or Location |
-/// 
+///
 /// # Response Body Parameters
-/// 
+///
 /// | Name | Type | Description |
 /// | :--- | :--- | :--- |
 /// | created | timestamp (RFC 3339) | Date/Time at which the quote was created. |
@@ -133,9 +135,9 @@ pub struct CreateQuoteRequest {
 /// | currency_type | string | Three-letter ISO currency code, in uppercase. |
 /// | dropoff_deadline | timestamp (RFC 3339) | When a delivery must be dropped off. This is the end of the dropoff window. |
 /// | dropoff_eta | timestamp (RFC 3339) | Estimated drop-off time. |
-/// 
+///
 /// # Endpoint Specific Errors
-/// 
+///
 /// | Http Status | Code | Code Message |
 /// | :--- | :--- | :--- |
 /// | 400 | invalid_params | The parameters of your request were invalid. |
@@ -149,7 +151,7 @@ pub struct CreateQuoteRequest {
 /// | 400 | pickup_deadline_too_early | The pickup deadline time needs to be at least 20 minutes from now. |
 /// | 400 | pickup_ready_too_late | The pickup ready time needs to be within the next 30 days. |
 /// | 404 | customer_not_found | Customer does not exist.  |
-/// 
+///
 pub async fn create_quote(
     access_token: &str,
     customer_id: &str,
@@ -195,11 +197,11 @@ pub async fn create_quote(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.post(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .json(&request)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .json(&request)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -211,26 +213,28 @@ pub async fn create_quote(
 
 // Structs:
 
-pub struct LocalDateTime (DateTime<Local>);
+pub struct LocalDateTime(DateTime<Local>);
 
 impl Serialize for LocalDateTime {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
-        {
-            
-            //  let mut s = serializer.serialize_value("Person", 3)?;
-            //  s.serialize_field("name", &self.name)?;
-            //  s.serialize_field("age", &self.age)?;
-            //  s.serialize_field("phones", &self.phones)?;
-            //  s.end()
-            //let date_time: DateTime<Utc> = Utc.with_ymd_and_hms(2017, 04, 02, 12, 50, 32).unwrap();
-            let formatted = format!("{}", self.0.format("%d/%m/%Y %H:%M"));
-            let mut x = serializer.serialize_str(&formatted)?;
-            x.end()
-        }
+    {
+        serializer.collect_str(&format!("{}", self.0.format("%d/%m/%Y %H:%M")))
+    }
 }
 
+impl From<DateTime<Local>> for LocalDateTime {
+    fn from(value: DateTime<Local>) -> Self {
+        Self(value)
+    }
+}
+
+impl From<LocalDateTime> for DateTime<Local> {
+    fn from(value: LocalDateTime) -> Self {
+        value.0
+    }
+}
 
 
 #[derive(Serialize)]
@@ -245,8 +249,8 @@ pub struct CreateDeliveryRequest {
     pickup_phone_number: String,
     deliverable_action: Option<DeliverableAction>,
     dropoff_business_name: Option<String>,
-    dropoff_latitude: Option<f64>, 
-    dropoff_longitude: Option<f64>, 
+    dropoff_latitude: Option<f64>,
+    dropoff_longitude: Option<f64>,
     dropoff_notes: Option<String>,
     dropoff_seller_notes: Option<String>,
     dropoff_verification: Option<VerificationRequirement>,
@@ -259,14 +263,14 @@ pub struct CreateDeliveryRequest {
     pickup_verification: Option<VerificationRequirement>,
     quote_id: Option<String>,
     undeliverable_action: Option<UndeliverableAction>,
-    pickup_ready_dt: Option<DateTime<Local>>,
-    pickup_deadline_dt: Option<DateTime<Local>>,
-    dropoff_ready_dt: Option<DateTime<Local>>,
-    dropoff_deadline_dt: Option<DateTime<Local>>,
+    pickup_ready_dt: Option<LocalDateTime>,
+    pickup_deadline_dt: Option<LocalDateTime>,
+    dropoff_ready_dt: Option<LocalDateTime>,
+    dropoff_deadline_dt: Option<LocalDateTime>,
     requires_dropoff_signature: Option<bool>,
     requires_id: Option<bool>,
     tip: Option<u32>,
-    idempotency_key: Option<String>, 
+    idempotency_key: Option<String>,
     external_store_id: Option<String>,
     return_verification: Option<VerificationRequirement>,
     test_specifications: Option<TestSpecifications>,
@@ -362,16 +366,17 @@ pub struct TestSpecifications {
 pub struct RoboCourierSpecification {
     mode: String,
 }
+
 /// Create a delivery between two addresses.
-/// 
+///
 /// # Request Path Parameters
-/// 
+///
 /// | Name        | Type   | Description                                                                |
 /// |-------------|--------|----------------------------------------------------------------------------|
 /// | customer_id | string | Unique identifier for the organization. Either UUID or starts with `cus_`. |
-/// 
+///
 /// # Request Body Parameters
-/// 
+///
 /// | Name | Type | Description |
 /// | :--- | :--- | :--- |
 /// | dropoff_address | string - Structured Address | (required) For single string, format is : "Street Address, City, State, Zip" |
@@ -408,9 +413,9 @@ pub struct RoboCourierSpecification {
 /// | idempotency_key | string | A key which is used to avoid duplicate order creation with identical idempotency keys for the same account. The key persists for a set time frame, defaulting to 6 hours |
 /// | external_store_id | string | (Optional) Unique identifier used by our Partners to reference a Store or Location |
 /// | return_verification | VerificationRequirement | Verification steps (barcode scanning, picture, or signature) that must be taken before the return can be completed. |
-/// 
+///
 /// # Request Body Parameters - Structured Address
-/// 
+///
 /// | Name | Type | Description |
 /// | :--- | :--- | :--- |
 /// | street_address | array[string] | Array of street address elements. For example: ["2000 Ocean Ave", "Floor 2" ] |
@@ -418,9 +423,9 @@ pub struct RoboCourierSpecification {
 /// | state | string |  |
 /// | zip_code | string |  |
 /// | country | string | (optional) |
-/// 
+///
 /// # Request Body Parameters - ManifestItem
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |name|	string|	Description of item.|
@@ -432,9 +437,9 @@ pub struct RoboCourierSpecification {
 /// |weight|	integer|	[optional] Weight in grams|
 /// |perishability|	integer	|[optional] Perishability represents the number of minutes before an item expires. For example, an ice cream might have a perishability of 15 minutes from pickup|
 /// |preparation_time|	integer|	[optional] How long a given item takes to prepare (in minutes)|
-/// 
+///
 /// ### ManifestItem - Size
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |small	|string	|You can carry it with one hand e.g. bottle of water.|
@@ -442,24 +447,24 @@ pub struct RoboCourierSpecification {
 /// |large	|string	|You need two hands to carry it e.g. computer monitor.|
 /// |xlarge	|string	|You will need to make multiple trips to/from a vehicle to transport e.g. grocery order. Specifying `xlarge` will cause dispatch to only couriers using a car or larger (no walkers/bikes/scooters/etc…).|
 /// |big	|string	|[DEPRECATED] Same as large.|
-/// 
+///
 /// ### ManifestItem - Dimensions
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |length	|integer	|[optional] Length in centimeters|
 /// |height	|integer	|[optional] Height in centimeters|
 /// |depth	|integer	|[optional] Depth in centimeters|
-/// 
+///
 /// # Request Body Parameters - DeliverableAction
-/// 
+///
 /// |Name|	Type|	Description|
 /// | :--- | :--- | :--- |
 /// |deliverable_action_meet_at_door|	string|	Meet at door delivery. This is the default if DeliverableAction is not set.|
 /// |deliverable_action_leave_at_door|	string	|The “happy path” action for the courier to take on a delivery. When used, delivery action can be set to “leave at door” for a contactless delivery. Cannot leave at door when signature or ID verification requirements are applied when creating a delivery. Photo confirmation of delivery will be automatically applied as a requirement to complete drop-off.|
-/// 
+///
 /// # Request Body Parameters - VerificationRequirement
-/// 
+///
 /// |Name	|Type|	Description|
 /// | :--- | :--- | :--- |
 /// |signature|	boolean|	[DEPRECATED] Flag for if a signature is required at this waypoint. signature_requirement should be used instead.|
@@ -469,49 +474,49 @@ pub struct RoboCourierSpecification {
 /// |package	|PackageRequirement	|Package verifications required for this waypoint.|
 /// |identification	|IdentificationRequirement	|Identification scanning/verification requirements for this waypoint…|
 /// |picture	|boolean| |
-/// 
+///
 /// ### VerificationRequirement - SignatureRequirement
-/// 
+///
 /// |Name|	Type|	Description|
 /// | :--- | :--- | :--- |
 /// |enabled	|boolean	|Flag for if a signature is required at this waypoint.|
 /// |collect_signer_name|	boolean|	Flag for if the signer’s name is required at this waypoint.|
 /// |collect_signer_relationship|	boolean|	Flag for if the signer’s relationship to the intended recipient is required at this waypoint.|
-/// 
+///
 /// ### VerificationRequirement - BarcodeRequirement
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |value	|string	|String value encoded in the barcode.|
 /// |type	|string	|Type of barcode. Valid values: “CODE39”, “CODE39_FULL_ASCII”, “CODE128”, “QR”.|
-/// 
+///
 /// ### VerificationRequirement - PincodeRequirement
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |enabled	|bool	|When set to true in POST requests, the delivery will require pincode entry at handoff.|
 /// |value	|string	|The pincode that the customer must present at dropoff. This field will be ignored in the CreateDelivery requests, and the pin code is internally generated when this requirement is present.|
-/// 
+///
 /// ### VerificationRequirement - PackageRequirement
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |bag_count	|integer	|Number of bags to be picked up.|
 /// |drink_count	|integer	|Number of drinks to be picked up.|
-/// 
+///
 /// ### VerificationRequirement - IdentificationRequirement
 ///
 /// |Name	|Type|	Description|
 /// | :--- | :--- | :--- |
 /// |min_age	|integer|	Minimum age that must be verified for this delivery.|
-/// 
+///
 /// # Request Body Parameters - UndeliverableAction
-/// 
+///
 /// |Name	|Type|	Description|
 /// | :--- | :--- | :--- |
 /// |leave_at_door|	string	|Specify the “unhappy path” action for the courier to take on a delivery once a normal delivery attempt is made and a customer is not available. Cannot leave at door when signature or ID verification requirements are applied when creating a delivery. Photo confirmation of delivery will be automatically applied as a requirement to complete drop-off.|
 /// |return|	string	|Specify the “unhappy path” action for the courier to take on a delivery once a normal delivery attempt is made and a customer is not available. This action requests the courier to return the delivery to the pickup waypoint.|
-/// 
+///
 pub async fn create_delivery(
     access_token: &str,
     customer_id: &str,
@@ -546,11 +551,11 @@ pub async fn create_delivery(
     requires_dropoff_signature: Option<bool>,
     requires_id: Option<bool>,
     tip: Option<u32>,
-    idempotency_key: Option<&str>, 
+    idempotency_key: Option<&str>,
     external_store_id: Option<&str>,
     return_verification: Option<VerificationRequirement>,
     test_specifications: Option<TestSpecifications>,
-    ) -> Result<String, Error> {
+) -> Result<String, Error> {
     let request = CreateDeliveryRequest {
         dropoff_address: dropoff_address.to_string(),
         dropoff_name: dropoff_name.to_string(),
@@ -576,10 +581,10 @@ pub async fn create_delivery(
         pickup_verification,
         quote_id: quote_id.map(|s| s.to_string()),
         undeliverable_action,
-        pickup_ready_dt,
-        pickup_deadline_dt,
-        dropoff_ready_dt,
-        dropoff_deadline_dt,
+        pickup_ready_dt: pickup_ready_dt.map(|dt| dt.into()),
+        pickup_deadline_dt: pickup_deadline_dt.map(|dt| dt.into()),
+        dropoff_ready_dt: dropoff_ready_dt.map(|dt| dt.into()),
+        dropoff_deadline_dt: dropoff_deadline_dt.map(|dt| dt.into()),
         requires_dropoff_signature,
         requires_id,
         tip,
@@ -599,11 +604,11 @@ pub async fn create_delivery(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.post(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .json(&request)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .json(&request)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -616,7 +621,7 @@ pub async fn create_delivery(
 // Structs:
 
 /// Retrieve the current status of an existing delivery
-/// 
+///
 /// # Request Path Parameters
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
@@ -627,8 +632,7 @@ pub async fn get_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-    ) -> Result<String, Error> {
-
+) -> Result<String, Error> {
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}",
@@ -640,10 +644,10 @@ pub async fn get_delivery(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.get(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -669,10 +673,11 @@ pub struct UpdateDeliveryRequest {
     dropoff_latitude: Option<f64>,
     dropoff_longitude: Option<f64>,
 }
+
 /// Modify an ongoing delivery.
-/// 
+///
 /// # Request Body Parameters
-/// 
+///
 /// |Name|	Type	|Description|
 /// | :--- | :--- | :--- |
 /// |dropoff_notes|	string	|Additional instructions for the courier at the dropoff location. Max 280 characters.|
@@ -686,12 +691,12 @@ pub struct UpdateDeliveryRequest {
 /// |tip_by_customer	|integer|	Amount in cents that will be paid to the courier as a tip.|
 /// |dropoff_latitude	|double|	Dropoff latitude coordinate.|
 /// |dropoff_longitude	|double|	Dropoff longitude coordinate.|
-/// 
+///
 /// ### VerificationRequirement - docs at create_delivery
-/// 
+///
 /// # Request Validity
 /// ### Business rules for when request will be valid:
-/// 
+///
 /// |Parameter|	Delivery created|	Pickup started|	Pickup imminent|	Pickup complete|	Dropff started|	Dropoff imminent|	Dropoff complete|
 /// | :--- | :--- | :--- |:--- |:--- |:--- |:--- |:--- |
 /// |manifest reference|	edit|	edit|	-|	-|	-	|-	|-|
@@ -707,7 +712,7 @@ pub struct UpdateDeliveryRequest {
 /// |dropoff_verification.identification	remove|	remove|	remove|	remove|	remove|	-|	-|
 /// |dropoff_verification.pincodes|	edit	|edit|	edit|	edit	|edit|	-|	-|
 /// |tip_by_customer|	-|	-|	-|	-	|edit|	edit|	edit|
-/// 
+///
 pub async fn update_delivery(
     access_token: &str,
     customer_id: &str,
@@ -723,7 +728,7 @@ pub async fn update_delivery(
     tip_by_customer: Option<u32>,
     dropoff_latitude: Option<f64>,
     dropoff_longitude: Option<f64>,
-    ) -> Result<String, Error> {
+) -> Result<String, Error> {
     let request = UpdateDeliveryRequest {
         dropoff_notes: dropoff_notes.map(|s| s.to_string()),
         dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
@@ -749,11 +754,11 @@ pub async fn update_delivery(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.post(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .json(&request)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .json(&request)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -766,9 +771,9 @@ pub async fn update_delivery(
 // Structs:
 
 /// Cancel an ongoing or previously scheduled delivery.
-/// 
+///
 /// # Endpoint Specific Errors
-/// 
+///
 /// |Http Status Code|	Code	|Message|
 /// | :--- | :--- | :--- |
 /// |400	|noncancelable_delivery|	Delivery cannot be cancelled.|
@@ -777,13 +782,12 @@ pub async fn update_delivery(
 /// |408	|request_timeout|	The request timed out.|
 /// |500	|unknown_error|	An unknown error happened.|
 /// |503	|service_unavailable	|Service is currently unavailable.|
-/// 
+///
 pub async fn cancel_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-    ) -> Result<String, Error> {
-
+) -> Result<String, Error> {
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}/cancel",
@@ -795,10 +799,10 @@ pub async fn cancel_delivery(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.post(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -811,23 +815,22 @@ pub async fn cancel_delivery(
 // Structs:
 
 /// Receive update of information on a delivery
-/// 
+///
 /// # Query Parameters
-/// 
+///
 /// |Name	|Type	|Description|
 /// | :--- | :--- | :--- |
 /// |filter	|string	|Filter deliveries by delivery state. Valid values are: “pending”, “pickup”, “pickup_complete”, “dropoff”, “delivered”, “canceled”, “returned”, and “ongoing”.|
 /// |limit	|integer|	Maximum number of responses to return.|
 /// |Offset	|integer|	Offset of response objects for pagination.|
-/// 
+///
 pub async fn list_deliveries(
     access_token: &str,
     customer_id: &str,
     filter: Option<&str>,
-    limit:	Option<u32>,
-    offset:	Option<u32>,
+    limit: Option<u32>,
+    offset: Option<u32>,
 ) -> Result<String, Error> {
-
     let client = Client::new();
     let mut url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries",
@@ -848,10 +851,10 @@ pub async fn list_deliveries(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.get(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
@@ -868,53 +871,54 @@ pub struct PODRetrievalRequest {
     waypoint: String,
     type_of_waypoint: String,
 }
+
 /// Return a Proof-of-Delivery (P.O.D.) File if verification requirement given in create delivery request
-/// 
+///
 /// If a delivery is created with any verification requirements (e.g.: picture, signature or pincode), the resulting image file is made available to you through our proof-of-delivery endpoint. The endpoint will return a Proof-of-Delivery (P.O.D.) File – A long Base64 string that can be converted to a PNG image (Web Converter (External)). The image will include the following information:
-/// 
+///
 /// - Delivery Status
-/// 
+///
 /// - Delivery timestamp
-/// 
+///
 /// - Uber Order ID
-/// 
+///
 /// - External Order ID
-/// 
+///
 /// - Proof Type
-/// 
+///
 /// - Image (Signature image, picture image, or pincode value)
-/// 
+///
 /// For the “signature” verification type, signer name or signer relationship will also be included if it is enabled for a delivery.
-/// 
+///
 /// # Request Body Parameters - 
-/// 
+///
 /// |Name	|Type|	Description|
 /// | :--- | :--- | :--- |
 /// |waypoint|	string|	Waypoint can be “pickup” or “dropoff” or “return”.|
 /// |type|string|	Type can be “picture” or “signature” or “pincode”.|
-/// 
+///
 /// # Response Body Parameters
-/// 
+///
 /// |Name	|Type|	Description|
 /// | :--- | :--- |
 /// |document|	string|	A long Base64 string representing the image.|
-/// 
+///
 /// # Endpoint Specific Errors
-/// 
+///
 /// |Http Status Code	|Code|	Message|
 /// | :--- | :--- | :--- |
 /// |404	|delivery_not_found	|Cannot find requested proof of delivery.|
 /// |400	|invalid_params|	Waypoint, type is invalid.|
 /// |404	|customer_not_cound	|Customer does not exist.|
 /// |500|	unknown_error|	An unknown error happened.|
-/// 
+///
 pub async fn pod_retrieval(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
     waypoint: &str,
     type_of_waypoint: &str,
-    ) -> Result<String, Error> {
+) -> Result<String, Error> {
     let request = PODRetrievalRequest {
         waypoint: waypoint.to_string(),
         type_of_waypoint: type_of_waypoint.to_string(),
@@ -931,11 +935,11 @@ pub async fn pod_retrieval(
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
     let res = client.post(&url)
-    .header(CONTENT_TYPE, content_type)
-    .header(AUTHORIZATION, authorization)
-    .json(&request)
-    .send()
-    .await?;
+        .header(CONTENT_TYPE, content_type)
+        .header(AUTHORIZATION, authorization)
+        .json(&request)
+        .send()
+        .await?;
 
     let text = res.text().await?;
     Ok(text)
