@@ -482,7 +482,7 @@ impl ManifestItem {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 pub struct DeliverableAction {
     deliverable_action_meet_at_door: String,
     deliverable_action_leave_at_door: String,
@@ -1036,12 +1036,16 @@ pub async fn create_delivery(
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .json(&request)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1049,6 +1053,42 @@ pub async fn create_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Structs:
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct GetDeliveryResponse {
+    pub complete: bool,
+    pub courier: CourierInfo,
+    pub courier_imminent: bool,
+    pub created: LocalDateTime,
+    pub currency: String,
+    pub deliverable_action: DeliverableAction,
+    pub dropoff: WaypointInfo,
+    pub dropoff_deadline: LocalDateTime,
+    pub dropoff_eta: LocalDateTime,
+    pub dropoff_identifier: String,
+    pub dropoff_ready: LocalDateTime,
+    pub fee: u32,
+    pub id: String,
+    pub kind: String,
+    pub live_mode: bool,
+    pub manifest: ManifestInfo,
+    pub manifest_items:	ManifestItem,
+    pub pickup:	WaypointInfo,
+    pub pickup_deadline: LocalDateTime,
+    pub pickup_eta: LocalDateTime,
+    pub pickup_ready: LocalDateTime,
+    pub quote_id: String,
+    pub related_deliveries: RelatedDelivery,
+    pub status: String,
+    pub tip: u32,
+    pub tracking_url: String,
+    pub undeliverable_action: String,
+    pub undeliverable_reason: String,
+    pub updated: LocalDateTime,
+    pub uuid: String,
+    pub return_waypoint: WaypointInfo,
+}
 
 /// Retrieve the current status of an existing delivery
 ///
@@ -1073,14 +1113,19 @@ pub async fn get_delivery(
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
-    let res = client.get(&url)
+    let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: GetDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1088,6 +1133,42 @@ pub async fn get_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Structs:
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct UpdateDeliveryResponse {
+    pub complete: bool,
+    pub courier: CourierInfo,
+    pub courier_imminent: bool,
+    pub created: LocalDateTime,
+    pub currency: String,
+    pub deliverable_action: DeliverableAction,
+    pub dropoff: WaypointInfo,
+    pub dropoff_deadline: LocalDateTime,
+    pub dropoff_eta: LocalDateTime,
+    pub dropoff_identifier: String,
+    pub dropoff_ready: LocalDateTime,
+    pub fee: u32,
+    pub id: String,
+    pub kind: String,
+    pub live_mode: bool,
+    pub manifest: ManifestInfo,
+    pub manifest_items:	ManifestItem,
+    pub pickup:	WaypointInfo,
+    pub pickup_deadline: LocalDateTime,
+    pub pickup_eta: LocalDateTime,
+    pub pickup_ready: LocalDateTime,
+    pub quote_id: String,
+    pub related_deliveries: RelatedDelivery,
+    pub status: String,
+    pub tip: u32,
+    pub tracking_url: String,
+    pub undeliverable_action: String,
+    pub undeliverable_reason: String,
+    pub updated: LocalDateTime,
+    pub uuid: String,
+    pub return_waypoint: WaypointInfo,
+}
 
 #[derive(Serialize)]
 pub struct UpdateDeliveryRequest {
@@ -1186,12 +1267,16 @@ pub async fn update_delivery(
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .json(&request)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: UpdateDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1199,6 +1284,41 @@ pub async fn update_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Structs:
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct CancelDeliveryResponse {
+    pub complete: bool,
+    pub courier: CourierInfo,
+    pub courier_imminent: bool,
+    pub created: LocalDateTime,
+    pub currency: String,
+    pub dropoff: WaypointInfo,
+    pub dropoff_deadline: LocalDateTime,
+    pub dropoff_eta: LocalDateTime,
+    pub dropoff_identifier: String,
+    pub dropoff_ready: LocalDateTime,
+    pub fee: u32,
+    pub id: String,
+    pub kind: String,
+    pub live_mode: bool,
+    pub manifest: ManifestInfo,
+    pub manifest_items:	ManifestItem,
+    pub pickup:	WaypointInfo,
+    pub pickup_deadline: LocalDateTime,
+    pub pickup_eta: LocalDateTime,
+    pub pickup_ready: LocalDateTime,
+    pub quote_id: String,
+    pub related_deliveries: RelatedDelivery,
+    pub status: String,
+    pub tip: u32,
+    pub tracking_url: String,
+    pub undeliverable_action: String,
+    pub undeliverable_reason: String,
+    pub updated: LocalDateTime,
+    pub uuid: String,
+    pub return_waypoint: WaypointInfo,
+}
 
 /// Cancel an ongoing or previously scheduled delivery.
 ///
@@ -1231,11 +1351,16 @@ pub async fn cancel_delivery(
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1244,6 +1369,61 @@ pub async fn cancel_delivery(
 
 // Structs:
 
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct ListDeliveriesResponse {
+    pub data: Delivery,
+    pub next_href: String,
+    pub object: String,
+    pub total_count: u32,
+    pub url: String,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct Delivery {
+    pub complete: bool,
+    pub courier: CourierInfo,
+    pub courier_imminent: bool,
+    pub created: LocalDateTime,
+    pub currency: String,
+    pub deliverable_action: DeliverableAction,
+    pub dropoff: WaypointInfo,
+    pub dropoff_deadline: LocalDateTime,
+    pub dropoff_eta: LocalDateTime,
+    pub dropoff_identifier: String,
+    pub dropoff_ready: LocalDateTime,
+    pub fee: u32,
+    pub id: String,
+    pub kind: String,
+    pub live_mode: bool,
+    pub manifest: ManifestInfo,
+    pub manifest_items:	ManifestItem,
+    pub pickup:	WaypointInfo,
+    pub pickup_deadline: LocalDateTime,
+    pub pickup_eta: LocalDateTime,
+    pub pickup_ready: LocalDateTime,
+    pub quote_id: String,
+    pub related_deliveries: RelatedDelivery,
+    pub status: String,
+    pub tip: u32,
+    pub tracking_url: String,
+    pub undeliverable_action: String,
+    pub undeliverable_reason: String,
+    pub updated: LocalDateTime,
+    pub uuid: String,
+    pub return_waypoint: WaypointInfo,
+}
+
+/// # Response Body Parameters
+/// 
+/// |Name|	Type|	Description|
+/// | :--- | :--- | :--- |
+/// |data|	Delivery[]	|Array of deliveries matching filters (if any) provided.|
+/// |next_href	|string	|Url to fetch next set of deliveries.|
+/// |object	|string	|Response type. Will always be “list”.|
+/// |total_count	|integer	|[DEPRECATED] Response is always -1.|
+/// |url	|string|	Url for request.|
 /// Receive update of information on a delivery
 ///
 /// # Query Parameters
@@ -1280,14 +1460,19 @@ pub async fn list_deliveries(
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header).unwrap();
 
-    let res = client.get(&url)
+    let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: ListDeliveriesResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1295,6 +1480,12 @@ pub async fn list_deliveries(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Structs:
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct PODRetrievalResponse {
+    pub document: String,
+}
 
 #[derive(Serialize)]
 pub struct PODRetrievalRequest {
@@ -1367,12 +1558,16 @@ pub async fn pod_retrieval(
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .json(&request)
+        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
-    let text = res.text().await?;
-    Ok(text)
+    let response_body = res.text().await?;
+    let response_data: PODRetrievalResponse = serde_json::from_str(&response_body).unwrap();
+
+    println!("Response: {:?}", response_data);
+
+    Ok("success".to_string())
 }
 
 // 9. Delivery Status Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: event.delivery_status
