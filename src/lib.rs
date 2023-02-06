@@ -5,7 +5,10 @@ use reqwest::{Client, Error};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, TimeZone};
+use serde::de::Error as OtherError;
+use std::fmt;
+
 
 
 // Auth
@@ -279,12 +282,23 @@ impl Serialize for LocalDateTime {
     }
 }
 
-// Need to add Deserialize to LocalDateTime
-impl Deserialize<'_> for LocalDateTime {
+impl<'de> Deserialize<'de> for LocalDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: for<'de> Deserializer<'de>;
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        let dt = Local.datetime_from_str(&s, "%YYYY-%mm-%ddT%H:%M:%S").map_err(D::Error::custom)?;
+        Ok(LocalDateTime(dt))
+    }
 }
+
+impl fmt::Debug for LocalDateTime {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "LocalDateTime({:?})", self.0)
+    }
+}
+
 
 impl From<DateTime<Local>> for LocalDateTime {
     fn from(value: DateTime<Local>) -> Self {
