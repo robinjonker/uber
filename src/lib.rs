@@ -17,6 +17,7 @@ use chrono::{DateTime, Local};
 // Structs:
 
 #[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
 pub struct AuthRequest {
     client_id: String,
     client_secret: String,
@@ -60,11 +61,16 @@ pub async fn auth(
 
     let client = Client::new();
     let url = "https://login.uber.com/oauth/v2/token";
-    let content_type = HeaderValue::from_str("application/json").unwrap();
-
+    let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
+    let body = match serde_urlencoded::to_string(&request) {
+        Ok(body) => body,
+        Err(err) => {
+            return request::E Err(err.into())
+        }
+    };
     let res = client.post(&*url)
         .header(CONTENT_TYPE, content_type)
-        .json(&request)
+        .body(body)
         .send()
         .await?;
 
