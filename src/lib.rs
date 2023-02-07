@@ -8,8 +8,8 @@ use reqwest::header::AUTHORIZATION;
 mod errors;
 use errors::UberError;
 
-mod models;
-use models::{
+pub mod models;
+pub use models::{
     auth::{
         AuthRequest,
         AuthResponse
@@ -39,15 +39,17 @@ use models::{
         PODRetrievalRequest,
         PODRetrievalResponse
     },
-    general::{
+};
+    
+use models::general::{
         LocalDateTime,
         ManifestItem,
         DeliverableAction,
         VerificationRequirement,
         UndeliverableAction,
         TestSpecifications
-    }
-};
+    };
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 1. Auth: POST https://login.uber.com/oauth/v2/token
@@ -708,16 +710,29 @@ pub async fn create_delivery(
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
 
+
+    println!("Create Delivery Request: => '{:#?}'\n", request);
+
+    let body = serde_json::to_string(&request)?;
+
+    println!("CDR after serde_json::to_string: => '{:#?}'\n", body);
+    
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request)?)
+        .body(body)
         .send()
         .await?;
 
-    let response_body = res.text().await?;
-    let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
+    println!("Res: => '{:#?}'\n", res);
 
+    let response_body = res.text().await?;
+
+    // This message shows the error, possibly an error with regard to the ManifestItems paramter that is passed to Uber endpoint
+    println!("Response body .text().await?: => '{:#?}'\n", response_body);
+
+    let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
+    
     Ok(response_data)
 }
 

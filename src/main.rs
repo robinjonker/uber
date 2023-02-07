@@ -1,11 +1,8 @@
 use uber::{create_delivery, auth};
 
-mod models;
-use models::general::{
-    ManifestItem,
-    TestSpecifications,
-    RoboCourierSpecification,
-};
+use uber::models::general::{ManifestItem, RoboCourierSpecification, TestSpecifications};
+
+use uber::models::create_delivery::{CreateDeliveryRequest};
 
 use clap::Parser;
 
@@ -23,7 +20,6 @@ struct CmdArgs {
     #[structopt(long)]
     customer_id: String,
 }
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -43,7 +39,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // {}     Display
     // {:?}   Debug
     // {:#?}  Debug formatted
-    println!("Access Key: => '{}'", access_key);
+    println!("Access Key: => '{:#?}'", access_key);
+
+    let access_token = access_key.access_token;
 
     let dropoff_address = "123 Main St, San Francisco, CA, 94103";
     let dropoff_name = "Dropoff Location";
@@ -61,8 +59,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
+    // let mut request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
+
     let response = create_delivery(
-        &access_key,
+        &access_token,
         &customer_id,
         &dropoff_address,
         &dropoff_name,
@@ -101,7 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(test_specifications),
     ).await?;
 
-    println!(" Response => {}", response);
+    println!(" Response => {:#?}", response);
     Ok(())
 }
 

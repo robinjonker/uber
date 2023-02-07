@@ -13,7 +13,8 @@ use crate::models::general::{
     RelatedDelivery,
 };
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Default)]
+#[serde(rename_all = "snake_case")]
 pub struct CreateDeliveryRequest {
     pub dropoff_address: String,
     pub dropoff_name: String,
@@ -87,3 +88,84 @@ pub struct CreateDeliveryResponse {
     pub uuid: String,
     pub return_waypoint: WaypointInfo,
 }
+
+impl CreateDeliveryRequest {
+    pub fn new<T: Into<String>>(
+        dropoff_address: T, 
+        dropoff_name: T, 
+        dropoff_phone_number: T, 
+        manifest: T, 
+        manifest_items: ManifestItem, 
+        pickup_address: T, 
+        pickup_name: T, 
+        pickup_phone_number: T) -> Self {
+        CreateDeliveryRequest {
+            dropoff_address: dropoff_address.into(),
+            dropoff_name: dropoff_name.into(),
+            dropoff_phone_number: dropoff_phone_number.into(),
+            manifest: manifest.into(),
+            manifest_items,
+            pickup_address: pickup_address.into(),
+            pickup_name: pickup_name.into(),
+            pickup_phone_number: pickup_phone_number.into(),
+            ..Default::default()
+        }
+    }
+    pub fn new_with_test<T: Into<String>>(
+        dropoff_address: T, 
+        dropoff_name: T, 
+        dropoff_phone_number: T, 
+        manifest: T, 
+        manifest_items: ManifestItem, 
+        pickup_address: T, 
+        pickup_name: T, 
+        pickup_phone_number: T,
+        test_specifications: TestSpecifications) -> Self {
+        CreateDeliveryRequest {
+            dropoff_address: dropoff_address.into(),
+            dropoff_name: dropoff_name.into(),
+            dropoff_phone_number: dropoff_phone_number.into(),
+            manifest: manifest.into(),
+            manifest_items,
+            pickup_address: pickup_address.into(),
+            pickup_name: pickup_name.into(),
+            pickup_phone_number: pickup_phone_number.into(),
+            test_specifications: Some(test_specifications),
+            ..Default::default()
+        }
+    }
+    // pub fn for_text(prescription: &Prescription) -> Self {
+    //     Self {
+    //         prescription_id: prescription.id,
+    //         prescription_status: prescription.status_code.clone(),
+    //         content_type: CONTENT_TYPE_TEXT_PLAIN.to_string(),
+    //     }
+    // }
+}
+
+
+// #[derive(Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct PrescriptionJsonParams {
+//     prescription_id: i64,
+//     prescription_status: String,
+//     content_type: String,
+// }
+
+// impl PrescriptionJsonParams {
+//     pub fn for_text(prescription: &Prescription) -> Self {
+//         Self {
+//             prescription_id: prescription.id,
+//             prescription_status: prescription.status_code.clone(),
+//             content_type: CONTENT_TYPE_TEXT_PLAIN.to_string(),
+//         }
+//     }
+
+//     pub fn for_push_notification(prescription: &Prescription) -> Self {
+//         Self {
+//             prescription_id: prescription.id,
+//             prescription_status: prescription.status_code.clone(),
+//             content_type: CONTENT_TYPE_NOTIFICATION_PUSH.to_string(),
+//         }
+//     }
+// }

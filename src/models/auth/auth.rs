@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct AuthRequest {
     pub client_id: String,
@@ -16,4 +16,15 @@ pub struct AuthResponse {
     pub expires_in: i64,
     pub token_type: String,
     pub scope: String,
+}
+
+impl AuthRequest {
+    pub fn new<T: Into<String>>(client_id: T, client_secret: T) -> Self {
+        AuthRequest {
+            client_id: client_id.into(),
+            client_secret: client_secret.into(),
+            grant_type: Some("client_credentials".to_string()),
+            scope: Some("eats.deliveries".to_string()),
+        }
+    }
 }

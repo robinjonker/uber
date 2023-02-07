@@ -44,7 +44,6 @@ impl From<LocalDateTime> for DateTime<Local> {
     }
 }
 
-
 #[derive(Deserialize, Debug)]
 pub struct CourierInfo {
     pub name: String,
@@ -171,7 +170,7 @@ pub struct VerificationRequirement {
     picture: Option<bool>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct UndeliverableAction {
     leave_at_door: String,
     return_order: String,
@@ -222,12 +221,12 @@ pub struct IdentificationRequirement {
     min_age: u32,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Clone)]
 pub struct TestSpecifications {
     pub robo_courier_specification: RoboCourierSpecification,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Clone)]
 pub struct RoboCourierSpecification {
     pub mode: String,
 }
