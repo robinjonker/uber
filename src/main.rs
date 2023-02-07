@@ -1,8 +1,8 @@
-use uber::{create_delivery, auth};
+use uber_api::{create_delivery, auth};
 
-use uber::models::general::{ManifestItem, RoboCourierSpecification, TestSpecifications};
+use uber_api::models::general::{ManifestItem, RoboCourierSpecification, TestSpecifications};
 
-use uber::models::create_delivery::{CreateDeliveryRequest};
+use uber_api::models::create_delivery::{CreateDeliveryRequest};
 
 use clap::Parser;
 

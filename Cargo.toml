@@ -1,7 +1,10 @@
 [package]
-name = "uber"
+name = "uber_api"
 version = "0.1.0"
+authors = ["robinjonker"]
 edition = "2021"
+description = "A library coded in Rust and hosted on crates.io for Uber's API. In particular, Uber Direct with their DaaS API."
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
