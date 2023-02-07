@@ -1,15 +1,15 @@
 #[macro_use]
 extern crate serde_derive;
 
-use reqwest::{Client, Error};
+use reqwest::{Client};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use chrono::{DateTime, Local, TimeZone};
-use serde::de::Error as OtherError;
 use std::fmt;
 
-
+mod errors;
+use errors::UberError;
 
 // Auth
 
@@ -63,7 +63,7 @@ pub async fn auth(
     client_secret: &str,
     grant_type: Option<&str>,
     scope: Option<&str>,
-) -> Result<String, Error> {
+) -> Result<AuthResponse, UberError> {
     let request = AuthRequest {
         client_id: client_id.to_string(),
         client_secret: client_secret.to_string(),
@@ -73,27 +73,19 @@ pub async fn auth(
 
     let client = Client::new();
     let url = "https://login.uber.com/oauth/v2/token";
-    let content_type = HeaderValue::from_str("application/x-www-form-urlencoded").unwrap();
-    let body = match serde_urlencoded::to_string(&request) {
-        Ok(body) => body,
-        Err(err) => {
-            return request::E Err(err.into())
-        }
-    };
+    let content_type = HeaderValue::from_str("application/x-www-form-urlencoded")?;
+    let body = serde_urlencoded::to_string(&request)?;
+
     let res = client.post(&*url)
         .header(CONTENT_TYPE, content_type)
         .body(body)
         .send()
         .await?;
 
-    // let result: AuthResponse = serde_json::from_str(res.text()).await?;
-
     let response_body = res.text().await?;
-    let response_data: CreateQuoteResponse = serde_json::from_str(&response_body).unwrap();
-
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    let response_data: AuthResponse = serde_json::from_str(&response_body)?;
+    
+    Ok(response_data)
 }
 
 // DaaS
@@ -223,7 +215,7 @@ pub async fn create_quote(
     dropoff_deadline_dt: Option<&str>,
     manifest_total_value: Option<u32>,
     external_store_id: Option<&str>,
-) -> Result<String, Error> {
+) -> Result<CreateQuoteResponse, UberError> {
     let request = CreateQuoteRequest {
         pickup_address: pickup_address.to_string(),
         dropoff_address: dropoff_address.to_string(),
@@ -246,23 +238,21 @@ pub async fn create_quote(
         "https://api.uber.com/v1/customers/{}/deliveryquotes",
         customer_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
+        .body(serde_json::to_string(&request)?)
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: CreateQuoteResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: CreateQuoteResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -281,7 +271,7 @@ impl Serialize for LocalDateTime {
         serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12 07:20:50.52Z
     }
 }
-
+use serde::de::Error as OtherError;
 impl<'de> Deserialize<'de> for LocalDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -473,7 +463,7 @@ pub struct PincodeProof {
     pub entered: String,
 }
 
-#[derive(Serialize, Default, Debug)]
+#[derive(Serialize, Default, Debug, Deserialize)]
 pub struct ManifestItem {
     pub name: String,
     pub quantity: u32,
@@ -496,7 +486,7 @@ impl ManifestItem {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DeliverableAction {
     deliverable_action_meet_at_door: String,
     deliverable_action_leave_at_door: String,
@@ -519,7 +509,7 @@ pub struct UndeliverableAction {
     return_order: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct Size {
     small: String,
     medium: String,
@@ -527,7 +517,7 @@ pub struct Size {
     xlarge: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Deserialize)]
 pub struct Dimensions {
     length: Option<u32>,
     height: Option<u32>,
@@ -999,7 +989,7 @@ pub async fn create_delivery(
     external_store_id: Option<&str>,
     return_verification: Option<VerificationRequirement>,
     test_specifications: Option<TestSpecifications>,
-) -> Result<String, Error> {
+) -> Result<CreateDeliveryResponse, UberError> {
     let request = CreateDeliveryRequest {
         dropoff_address: dropoff_address.to_string(),
         dropoff_name: dropoff_name.to_string(),
@@ -1043,23 +1033,21 @@ pub async fn create_delivery(
         "https://api.uber.com/v1/customers/{}/deliveries",
         customer_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
+        .body(serde_json::to_string(&request)?)
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1116,30 +1104,27 @@ pub async fn get_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-) -> Result<String, Error> {
+) -> Result<GetDeliveryResponse, UberError> {
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}",
         customer_id,
         delivery_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
-    let res = client.post(&url)
+    let res = client.get(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: GetDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: GetDeliveryResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1253,7 +1238,7 @@ pub async fn update_delivery(
     tip_by_customer: Option<u32>,
     dropoff_latitude: Option<f64>,
     dropoff_longitude: Option<f64>,
-) -> Result<String, Error> {
+) -> Result<UpdateDeliveryResponse, UberError> {
     let request = UpdateDeliveryRequest {
         dropoff_notes: dropoff_notes.map(|s| s.to_string()),
         dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
@@ -1274,23 +1259,21 @@ pub async fn update_delivery(
         customer_id,
         delivery_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
+        .body(serde_json::to_string(&request)?)
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: UpdateDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: UpdateDeliveryResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1351,30 +1334,27 @@ pub async fn cancel_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-) -> Result<String, Error> {
+) -> Result<CancelDeliveryResponse, UberError> {
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}/cancel",
         customer_id,
         delivery_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1454,7 +1434,7 @@ pub async fn list_deliveries(
     filter: Option<&str>,
     limit: Option<u32>,
     offset: Option<u32>,
-) -> Result<String, Error> {
+) -> Result<ListDeliveriesResponse, UberError> {
     let client = Client::new();
     let mut url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries",
@@ -1470,23 +1450,20 @@ pub async fn list_deliveries(
         url = format!("{}&offset={}", url, offset);
     }
 
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
-    let res = client.post(&url)
+    let res = client.get(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: ListDeliveriesResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: ListDeliveriesResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1553,7 +1530,7 @@ pub async fn pod_retrieval(
     delivery_id: &str,
     waypoint: &str,
     type_of_waypoint: &str,
-) -> Result<String, Error> {
+) -> Result<PODRetrievalResponse, UberError> {
     let request = PODRetrievalRequest {
         waypoint: waypoint.to_string(),
         type_of_waypoint: type_of_waypoint.to_string(),
@@ -1565,23 +1542,21 @@ pub async fn pod_retrieval(
         customer_id,
         delivery_id
     );
-    let content_type = HeaderValue::from_str("application/json").unwrap();
+    let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
-    let authorization = HeaderValue::from_str(&auth_header).unwrap();
+    let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request).unwrap())
+        .body(serde_json::to_string(&request)?)
         .send()
         .await?;
 
     let response_body = res.text().await?;
-    let response_data: PODRetrievalResponse = serde_json::from_str(&response_body).unwrap();
+    let response_data: PODRetrievalResponse = serde_json::from_str(&response_body)?;
 
-    println!("Response: {:?}", response_data);
-
-    Ok("success".to_string())
+    Ok(response_data)
 }
 
 // 9. Delivery Status Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: event.delivery_status
