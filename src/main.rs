@@ -1,7 +1,11 @@
-use dotenv::dotenv;
-use uber::{ManifestItem, TestSpecifications, RoboCourierSpecification, create_delivery, auth};
-use std::env;
+use uber::{create_delivery, auth};
 
+mod models;
+use models::general::{
+    ManifestItem,
+    TestSpecifications,
+    RoboCourierSpecification,
+};
 
 use clap::Parser;
 

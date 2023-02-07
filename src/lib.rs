@@ -4,38 +4,54 @@ extern crate serde_derive;
 use reqwest::{Client};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use chrono::{DateTime, Local, TimeZone};
-use std::fmt;
 
 mod errors;
 use errors::UberError;
 
-// Auth
+mod models;
+use models::{
+    auth::{
+        AuthRequest,
+        AuthResponse
+    },
+    create_quote::{
+        CreateQuoteRequest,
+        CreateQuoteResponse
+    },
+    create_delivery::{
+        CreateDeliveryRequest,
+        CreateDeliveryResponse
+    },
+    get_delivery::{
+        GetDeliveryResponse
+    },
+    update_delivery::{
+        UpdateDeliveryRequest,
+        UpdateDeliveryResponse
+    },
+    cancel_delivery::{
+        CancelDeliveryResponse
+    },
+    list_deliveries::{
+        ListDeliveriesResponse
+    },
+    pod_retrieval::{
+        PODRetrievalRequest,
+        PODRetrievalResponse
+    },
+    general::{
+        LocalDateTime,
+        ManifestItem,
+        DeliverableAction,
+        VerificationRequirement,
+        UndeliverableAction,
+        TestSpecifications
+    }
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 1. Auth: POST https://login.uber.com/oauth/v2/token
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub struct AuthRequest {
-    client_id: String,
-    client_secret: String,
-    grant_type: Option<String>,
-    scope: Option<String>,
-}
-
-#[derive(Deserialize ,Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct AuthResponse {
-    pub access_token: String,
-    pub expires_in: i64,
-    pub token_type: String,
-    pub scope: String,
-}
 
 /// Retrieve access token for authenticated user
 ///
@@ -88,49 +104,9 @@ pub async fn auth(
     Ok(response_data)
 }
 
-// DaaS
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 2. Create Quote: # POST https://api.uber.com/v1/customers/{customer_id}/delivery_quotes
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub struct CreateQuoteRequest {
-    pickup_address: String,
-    dropoff_address: String,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
-    dropoff_phone_number: Option<String>,
-    pickup_latitude: Option<f64>,
-    pickup_longitude: Option<f64>,
-    pickup_phone_number: Option<String>,
-    pickup_ready_dt: Option<String>,
-    pickup_deadline_dt: Option<String>,
-    dropoff_ready_dt: Option<String>,
-    dropoff_deadline_dt: Option<String>,
-    manifest_total_value: Option<u32>,
-    external_store_id: Option<String>,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct CreateQuoteResponse {
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub currency_type: String,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub duration: i64,
-    pub expires: LocalDateTime,
-    pub fee: i64,
-    pub id: String,
-    pub kind: String,
-    pub pickup_duration: i64,
-    pub external_store_id: String,
-}
 
 /// Create a quote to check deliverability, validity and cost for delivery between two addresses.
 ///
@@ -209,10 +185,10 @@ pub async fn create_quote(
     pickup_latitude: Option<f64>,
     pickup_longitude: Option<f64>,
     pickup_phone_number: Option<&str>,
-    pickup_ready_dt: Option<&str>,
-    pickup_deadline_dt: Option<&str>,
-    dropoff_ready_dt: Option<&str>,
-    dropoff_deadline_dt: Option<&str>,
+    pickup_ready_dt: Option<LocalDateTime>,
+    pickup_deadline_dt: Option<LocalDateTime>,
+    dropoff_ready_dt: Option<LocalDateTime>,
+    dropoff_deadline_dt: Option<LocalDateTime>,
     manifest_total_value: Option<u32>,
     external_store_id: Option<&str>,
 ) -> Result<CreateQuoteResponse, UberError> {
@@ -225,10 +201,10 @@ pub async fn create_quote(
         pickup_latitude,
         pickup_longitude,
         pickup_phone_number: pickup_phone_number.map(|s| s.to_string()),
-        pickup_ready_dt: pickup_ready_dt.map(|s| s.to_string()),
-        pickup_deadline_dt: pickup_deadline_dt.map(|s| s.to_string()),
-        dropoff_ready_dt: dropoff_ready_dt.map(|s| s.to_string()),
-        dropoff_deadline_dt: dropoff_deadline_dt.map(|s| s.to_string()),
+        pickup_ready_dt,
+        pickup_deadline_dt,
+        dropoff_ready_dt,
+        dropoff_deadline_dt,
         manifest_total_value,
         external_store_id: external_store_id.map(|s| s.to_string()),
     };
@@ -258,311 +234,6 @@ pub async fn create_quote(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 3. Create Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-pub struct LocalDateTime(DateTime<Local>);
-
-impl Serialize for LocalDateTime {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-    {
-        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12 07:20:50.52Z
-    }
-}
-use serde::de::Error as OtherError;
-impl<'de> Deserialize<'de> for LocalDateTime {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        let dt = Local.datetime_from_str(&s, "%YYYY-%mm-%ddT%H:%M:%S").map_err(D::Error::custom)?;
-        Ok(LocalDateTime(dt))
-    }
-}
-
-impl fmt::Debug for LocalDateTime {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "LocalDateTime({:?})", self.0)
-    }
-}
-
-
-impl From<DateTime<Local>> for LocalDateTime {
-    fn from(value: DateTime<Local>) -> Self {
-        Self(value)
-    }
-}
-
-impl From<LocalDateTime> for DateTime<Local> {
-    fn from(value: LocalDateTime) -> Self {
-        value.0
-    }
-}
-
-#[derive(Serialize)]
-pub struct CreateDeliveryRequest {
-    dropoff_address: String,
-    dropoff_name: String,
-    dropoff_phone_number: String,
-    manifest: String,
-    manifest_items: ManifestItem,
-    pickup_address: String,
-    pickup_name: String,
-    pickup_phone_number: String,
-    deliverable_action: Option<DeliverableAction>,
-    dropoff_business_name: Option<String>,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
-    dropoff_notes: Option<String>,
-    dropoff_seller_notes: Option<String>,
-    dropoff_verification: Option<VerificationRequirement>,
-    manifest_reference: Option<String>,
-    manifest_total_value: Option<u32>,
-    pickup_business_name: Option<String>,
-    pickup_latitude: Option<f64>,
-    pickup_longitude: Option<f64>,
-    pickup_notes: Option<String>,
-    pickup_verification: Option<VerificationRequirement>,
-    quote_id: Option<String>,
-    undeliverable_action: Option<UndeliverableAction>,
-    pickup_ready_dt: Option<LocalDateTime>,
-    pickup_deadline_dt: Option<LocalDateTime>,
-    dropoff_ready_dt: Option<LocalDateTime>,
-    dropoff_deadline_dt: Option<LocalDateTime>,
-    requires_dropoff_signature: Option<bool>,
-    requires_id: Option<bool>,
-    tip: Option<u32>,
-    idempotency_key: Option<String>,
-    external_store_id: Option<String>,
-    return_verification: Option<VerificationRequirement>,
-    test_specifications: Option<TestSpecifications>,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct CreateDeliveryResponse {
-    pub complete: bool,
-    pub courier: CourierInfo,
-    pub courier_imminent: bool,
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub dropoff: WaypointInfo,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub dropoff_identifier: String,
-    pub dropoff_ready: LocalDateTime,
-    pub external_id: String,
-    pub fee: u32,
-    pub id: String,
-    pub kind: String,
-    pub live_mode: bool,
-    pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
-    pub pickup:	WaypointInfo,
-    pub pickup_deadline: LocalDateTime,
-    pub pickup_eta: LocalDateTime,
-    pub pickup_ready: LocalDateTime,
-    pub quote_id: String,
-    pub related_deliveries: RelatedDelivery,
-    pub status: String,
-    pub tip: u32,
-    pub tracking_url: String,
-    pub undeliverable_action: String,
-    pub undeliverable_reason: String,
-    pub updated: LocalDateTime,
-    pub uuid: String,
-    pub return_waypoint: WaypointInfo,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct CourierInfo {
-    pub name: String,
-    pub rating:	f64,	
-    pub vehicle_type: String,
-    pub phone_number: String,
-    pub location: LatLng,
-    pub img_href: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct LatLng {
-    pub lat: f64,
-    pub lng: f64,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct RelatedDelivery {
-    pub id: String,
-    pub relationship: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ManifestInfo {
-    pub reference: String,
-    pub description: String,
-    pub total_value: u32,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct WaypointInfo {
-    pub name: String,
-    pub phone_number: String,
-    pub address: String,
-    pub detailed_address: Address,
-    pub notes: String,
-    pub seller_notes: String,
-    pub courier_notes: String,
-    pub location: LatLng,	
-    pub verification: VerificationProof,
-    pub verification_requirements: VerificationRequirement,
-    pub external_store_id: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Address {
-    pub street_address_1: String,
-    pub street_address_2: String,
-    pub city: String,
-    pub state: String,
-    pub zip_code: String,
-    pub country: String,
-    pub sublocality_level_1: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct VerificationProof {
-    pub signature: SignatureProof,
-    pub barcodes: BarcodeRequirement,
-    pub picture: PictureProof,
-    pub identification: IdentificationProof,
-    pub pin_code: PincodeProof,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct SignatureProof {
-    pub image_url: String,
-    pub signer_name: String,
-    pub signer_relationship: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct PictureProof {
-    pub image_url: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct IdentificationProof {
-    pub min_age_verified: bool,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct PincodeProof {
-    pub entered: String,
-}
-
-#[derive(Serialize, Default, Debug, Deserialize)]
-pub struct ManifestItem {
-    pub name: String,
-    pub quantity: u32,
-    pub size: Option<Size>,
-    pub dimensions: Option<Dimensions>,
-    pub price: Option<u32>,
-    pub must_be_upright: Option<bool>,
-    pub weight: Option<u32>,
-    pub perishability: Option<u32>,
-    pub preparation_time: u32,
-}
-impl ManifestItem {
-    pub fn new<T: Into<String>>(name: T, quantity: u32, preparation_time: u32) -> Self {
-        ManifestItem {
-            name: name.into(),
-            quantity,
-            preparation_time,
-            ..Default::default()
-        }
-    }
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DeliverableAction {
-    deliverable_action_meet_at_door: String,
-    deliverable_action_leave_at_door: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct VerificationRequirement {
-    signature: Option<bool>,
-    signature_requirement: Option<SignatureRequirement>,
-    barcodes: Option<BarcodeRequirement>,
-    pincode: Option<PincodeRequirement>,
-    package: Option<PackageRequirement>,
-    identification: Option<IdentificationRequirement>,
-    picture: Option<bool>,
-}
-
-#[derive(Serialize)]
-pub struct UndeliverableAction {
-    leave_at_door: String,
-    return_order: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct Size {
-    small: String,
-    medium: String,
-    large: String,
-    xlarge: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct Dimensions {
-    length: Option<u32>,
-    height: Option<u32>,
-    depth: Option<u32>,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct SignatureRequirement {
-    enabled: bool,
-    collect_signer_name: bool,
-    collect_signer_relationship: bool,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct BarcodeRequirement {
-    value: String,
-    type_of_barcode: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct PincodeRequirement {
-    enabled: bool,
-    value: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct PackageRequirement {
-    bag_count: u32,
-    drink_count: u32,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct IdentificationRequirement {
-    min_age: u32,
-}
-
-#[derive(Serialize)]
-pub struct TestSpecifications {
-    pub robo_courier_specification: RoboCourierSpecification,
-}
-
-#[derive(Serialize)]
-pub struct RoboCourierSpecification {
-    pub mode: String,
-}
 
 /// Create a delivery between two addresses.
 ///
@@ -978,10 +649,10 @@ pub async fn create_delivery(
     pickup_verification: Option<VerificationRequirement>,
     quote_id: Option<&str>,
     undeliverable_action: Option<UndeliverableAction>,
-    pickup_ready_dt: Option<DateTime<Local>>,
-    pickup_deadline_dt: Option<DateTime<Local>>,
-    dropoff_ready_dt: Option<DateTime<Local>>,
-    dropoff_deadline_dt: Option<DateTime<Local>>,
+    pickup_ready_dt: Option<LocalDateTime>,
+    pickup_deadline_dt: Option<LocalDateTime>,
+    dropoff_ready_dt: Option<LocalDateTime>,
+    dropoff_deadline_dt: Option<LocalDateTime>,
     requires_dropoff_signature: Option<bool>,
     requires_id: Option<bool>,
     tip: Option<u32>,
@@ -1015,10 +686,10 @@ pub async fn create_delivery(
         pickup_verification,
         quote_id: quote_id.map(|s| s.to_string()),
         undeliverable_action,
-        pickup_ready_dt: pickup_ready_dt.map(|dt| dt.into()),
-        pickup_deadline_dt: pickup_deadline_dt.map(|dt| dt.into()),
-        dropoff_ready_dt: dropoff_ready_dt.map(|dt| dt.into()),
-        dropoff_deadline_dt: dropoff_deadline_dt.map(|dt| dt.into()),
+        pickup_ready_dt,
+        pickup_deadline_dt,
+        dropoff_ready_dt,
+        dropoff_deadline_dt,
         requires_dropoff_signature,
         requires_id,
         tip,
@@ -1053,44 +724,6 @@ pub async fn create_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 4. Get Delivery GET https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct GetDeliveryResponse {
-    pub complete: bool,
-    pub courier: CourierInfo,
-    pub courier_imminent: bool,
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub deliverable_action: DeliverableAction,
-    pub dropoff: WaypointInfo,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub dropoff_identifier: String,
-    pub dropoff_ready: LocalDateTime,
-    pub fee: u32,
-    pub id: String,
-    pub kind: String,
-    pub live_mode: bool,
-    pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
-    pub pickup:	WaypointInfo,
-    pub pickup_deadline: LocalDateTime,
-    pub pickup_eta: LocalDateTime,
-    pub pickup_ready: LocalDateTime,
-    pub quote_id: String,
-    pub related_deliveries: RelatedDelivery,
-    pub status: String,
-    pub tip: u32,
-    pub tracking_url: String,
-    pub undeliverable_action: String,
-    pub undeliverable_reason: String,
-    pub updated: LocalDateTime,
-    pub uuid: String,
-    pub return_waypoint: WaypointInfo,
-}
 
 /// Retrieve the current status of an existing delivery
 ///
@@ -1130,59 +763,6 @@ pub async fn get_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 5. Update Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct UpdateDeliveryResponse {
-    pub complete: bool,
-    pub courier: CourierInfo,
-    pub courier_imminent: bool,
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub deliverable_action: DeliverableAction,
-    pub dropoff: WaypointInfo,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub dropoff_identifier: String,
-    pub dropoff_ready: LocalDateTime,
-    pub fee: u32,
-    pub id: String,
-    pub kind: String,
-    pub live_mode: bool,
-    pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
-    pub pickup:	WaypointInfo,
-    pub pickup_deadline: LocalDateTime,
-    pub pickup_eta: LocalDateTime,
-    pub pickup_ready: LocalDateTime,
-    pub quote_id: String,
-    pub related_deliveries: RelatedDelivery,
-    pub status: String,
-    pub tip: u32,
-    pub tracking_url: String,
-    pub undeliverable_action: String,
-    pub undeliverable_reason: String,
-    pub updated: LocalDateTime,
-    pub uuid: String,
-    pub return_waypoint: WaypointInfo,
-}
-
-#[derive(Serialize)]
-pub struct UpdateDeliveryRequest {
-    dropoff_notes: Option<String>,
-    dropoff_seller_notes: Option<String>,
-    dropoff_verification: Option<VerificationRequirement>,
-    manifest_reference: Option<String>,
-    pickup_notes: Option<String>,
-    pickup_verification: Option<VerificationRequirement>,
-    requires_dropoff_signature: Option<bool>,
-    requires_id: Option<bool>,
-    tip_by_customer: Option<u32>,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
-}
 
 /// Modify an ongoing delivery.
 ///
@@ -1280,43 +860,6 @@ pub async fn update_delivery(
 // 6. Cancel Delivery POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}/cancel
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Structs:
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct CancelDeliveryResponse {
-    pub complete: bool,
-    pub courier: CourierInfo,
-    pub courier_imminent: bool,
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub dropoff: WaypointInfo,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub dropoff_identifier: String,
-    pub dropoff_ready: LocalDateTime,
-    pub fee: u32,
-    pub id: String,
-    pub kind: String,
-    pub live_mode: bool,
-    pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
-    pub pickup:	WaypointInfo,
-    pub pickup_deadline: LocalDateTime,
-    pub pickup_eta: LocalDateTime,
-    pub pickup_ready: LocalDateTime,
-    pub quote_id: String,
-    pub related_deliveries: RelatedDelivery,
-    pub status: String,
-    pub tip: u32,
-    pub tracking_url: String,
-    pub undeliverable_action: String,
-    pub undeliverable_reason: String,
-    pub updated: LocalDateTime,
-    pub uuid: String,
-    pub return_waypoint: WaypointInfo,
-}
-
 /// Cancel an ongoing or previously scheduled delivery.
 ///
 /// # Endpoint Specific Errors
@@ -1360,54 +903,6 @@ pub async fn cancel_delivery(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 7. List Deliveries GET https://api.uber.com/v1/customers/{customer_id}/deliveries
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct ListDeliveriesResponse {
-    pub data: Delivery,
-    pub next_href: String,
-    pub object: String,
-    pub total_count: u32,
-    pub url: String,
-}
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct Delivery {
-    pub complete: bool,
-    pub courier: CourierInfo,
-    pub courier_imminent: bool,
-    pub created: LocalDateTime,
-    pub currency: String,
-    pub deliverable_action: DeliverableAction,
-    pub dropoff: WaypointInfo,
-    pub dropoff_deadline: LocalDateTime,
-    pub dropoff_eta: LocalDateTime,
-    pub dropoff_identifier: String,
-    pub dropoff_ready: LocalDateTime,
-    pub fee: u32,
-    pub id: String,
-    pub kind: String,
-    pub live_mode: bool,
-    pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
-    pub pickup:	WaypointInfo,
-    pub pickup_deadline: LocalDateTime,
-    pub pickup_eta: LocalDateTime,
-    pub pickup_ready: LocalDateTime,
-    pub quote_id: String,
-    pub related_deliveries: RelatedDelivery,
-    pub status: String,
-    pub tip: u32,
-    pub tracking_url: String,
-    pub undeliverable_action: String,
-    pub undeliverable_reason: String,
-    pub updated: LocalDateTime,
-    pub uuid: String,
-    pub return_waypoint: WaypointInfo,
-}
 
 /// # Response Body Parameters
 /// 
@@ -1469,20 +964,6 @@ pub async fn list_deliveries(
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 8. POD Retrieval POST https://api.uber.com/v1/customers/{customer_id}/deliveries/{delivery_id}/proof-of-delivery
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Structs:
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct PODRetrievalResponse {
-    pub document: String,
-}
-
-#[derive(Serialize)]
-pub struct PODRetrievalRequest {
-    waypoint: String,
-    type_of_waypoint: String,
-}
 
 /// Return a Proof-of-Delivery (P.O.D.) File if verification requirement given in create delivery request
 ///
