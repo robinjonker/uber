@@ -27,7 +27,7 @@ pub struct CancelDeliveryResponse {
     pub kind: String,
     pub live_mode: bool,
     pub manifest: ManifestInfo,
-    pub manifest_items:	ManifestItem,
+    pub manifest_items:	Vec<ManifestItem>,
     pub pickup:	WaypointInfo,
     pub pickup_deadline: LocalDateTime,
     pub pickup_eta: LocalDateTime,

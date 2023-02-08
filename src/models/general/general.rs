@@ -10,7 +10,7 @@ impl Serialize for LocalDateTime {
         where
             S: Serializer,
     {
-        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12 07:20:50.52Z
+        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12T07:20:50.52Z
     }
 }
 
@@ -68,7 +68,7 @@ pub struct RelatedDelivery {
 
 #[derive(Deserialize, Debug)]
 pub struct ManifestInfo {
-    pub reference: String,
+    pub reference: Option<String>,
     pub description: String,
     pub total_value: u32,
 }
@@ -79,30 +79,30 @@ pub struct WaypointInfo {
     pub phone_number: String,
     pub address: String,
     pub detailed_address: Address,
-    pub notes: String,
-    pub seller_notes: String,
-    pub courier_notes: String,
+    pub notes: Option<String>,
+    pub seller_notes: Option<String>,
+    pub courier_notes: Option<String>,
     pub location: LatLng,	
-    pub verification: VerificationProof,
-    pub verification_requirements: VerificationRequirement,
-    pub external_store_id: String,
+    pub verification: Option<VerificationProof>,
+    pub verification_requirements: Option<VerificationRequirement>,
+    pub external_store_id: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Address {
     pub street_address_1: String,
-    pub street_address_2: String,
+    pub street_address_2: Option<String>,
     pub city: String,
     pub state: String,
     pub zip_code: String,
-    pub country: String,
-    pub sublocality_level_1: String,
+    pub country: Option<String>,
+    pub sublocality_level_1: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct VerificationProof {
     pub signature: SignatureProof,
-    pub barcodes: BarcodeRequirement,
+    pub barcodes: Vec<BarcodeRequirement>,
     pub picture: PictureProof,
     pub identification: IdentificationProof,
     pub pin_code: PincodeProof,
@@ -134,20 +134,20 @@ pub struct PincodeProof {
 pub struct ManifestItem {
     pub name: String,
     pub quantity: u32,
-    pub size: Option<Size>,
+    pub size: String,
     pub dimensions: Option<Dimensions>,
     pub price: Option<u32>,
     pub must_be_upright: Option<bool>,
     pub weight: Option<u32>,
     pub perishability: Option<u32>,
-    pub preparation_time: u32,
+    pub preparation_time: Option<u32>,
 }
 impl ManifestItem {
-    pub fn new<T: Into<String>>(name: T, quantity: u32, preparation_time: u32) -> Self {
+    pub fn new<T: Into<String>>(name: T, quantity: u32, size: T) -> Self {
         ManifestItem {
             name: name.into(),
             quantity,
-            preparation_time,
+            size: size.into(),
             ..Default::default()
         }
     }
@@ -162,8 +162,8 @@ pub struct DeliverableAction {
 #[derive(Serialize, Debug, Deserialize)]
 pub struct VerificationRequirement {
     signature: Option<bool>,
-    signature_requirement: Option<SignatureRequirement>,
-    barcodes: Option<BarcodeRequirement>,
+    signature_requirement: Option<Vec<SignatureRequirement>>,
+    barcodes: Option<Vec<BarcodeRequirement>>,
     pincode: Option<PincodeRequirement>,
     package: Option<PackageRequirement>,
     identification: Option<IdentificationRequirement>,
@@ -174,14 +174,6 @@ pub struct VerificationRequirement {
 pub struct UndeliverableAction {
     leave_at_door: String,
     return_order: String,
-}
-
-#[derive(Serialize, Debug, Deserialize)]
-pub struct Size {
-    small: String,
-    medium: String,
-    large: String,
-    xlarge: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]

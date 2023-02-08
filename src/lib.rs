@@ -631,7 +631,7 @@ pub async fn create_delivery(
     dropoff_name: &str,
     dropoff_phone_number: &str,
     manifest: &str,
-    manifest_items: ManifestItem,
+    manifest_items: Vec<ManifestItem>,
     pickup_address: &str,
     pickup_name: &str,
     pickup_phone_number: &str,
@@ -715,7 +715,7 @@ pub async fn create_delivery(
 
     let body = serde_json::to_string(&request)?;
 
-    println!("CDR after serde_json::to_string: => '{:#?}'\n", body);
+    println!("CDR after serde_json::to_string: => '{}'\n", body);
     
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
@@ -729,7 +729,7 @@ pub async fn create_delivery(
     let response_body = res.text().await?;
 
     // This message shows the error, possibly an error with regard to the ManifestItems paramter that is passed to Uber endpoint
-    println!("Response body .text().await?: => '{:#?}'\n", response_body);
+    println!("Response body .text().await?: => {}\n", response_body);
 
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     

@@ -48,7 +48,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let dropoff_phone_number = "+1-555-555-5555";
     let manifest = "Delivery items";
 
-    let mut manifest_items = ManifestItem::new("Robin", 1, 5);
+    let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
+
+    println!("ManifestItems: => '{:#?}'", manifest_items);
 
     let pickup_address = "456 Market St, San Francisco, CA, 94103";
     let pickup_name = "Pickup Location";
