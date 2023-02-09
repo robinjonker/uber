@@ -1,8 +1,14 @@
-use uber_api::{create_delivery, auth};
-
-use uber_api::models::general::{ManifestItem, RoboCourierSpecification, TestSpecifications};
-
-use uber_api::models::create_delivery::{CreateDeliveryRequest};
+use uber_api::{
+    create_delivery, 
+    auth, 
+    AuthRequest, 
+    CreateDeliveryRequest, 
+    models::general::{
+        ManifestItem, 
+        RoboCourierSpecification, 
+        TestSpecifications
+    }
+};
 
 use clap::Parser;
 
@@ -26,32 +32,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let CmdArgs {
         client_id, client_secret, customer_id,
     } = CmdArgs::parse();
-
     println!(" client id => {}\n client_secret => {}\n customer_id => {}", client_id, client_secret, customer_id);
-    let mut access_key = auth(
-        &client_id,
-        &client_secret,
 
-        Some("client_credentials".into()), Some("eats.deliveries".into())
-    ).await?;
+    let auth_request = AuthRequest::new(&client_id, &client_secret);
+    let auth_response = auth(auth_request).await?;
+    let access_token = &auth_response.access_token;
 
-    // &impl Future<Output = Result<String, reqwest::error::Error>>`
-    // {}     Display
-    // {:?}   Debug
-    // {:#?}  Debug formatted
-    println!("Access Key: => '{:#?}'", access_key);
-
-    let access_token = access_key.access_token;
+    println!("Access Key: => '{:#?}'", &auth_response);
 
     let dropoff_address = "123 Main St, San Francisco, CA, 94103";
     let dropoff_name = "Dropoff Location";
     let dropoff_phone_number = "+1-555-555-5555";
     let manifest = "Delivery items";
-
     let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
-
-    println!("ManifestItems: => '{:#?}'", manifest_items);
-
     let pickup_address = "456 Market St, San Francisco, CA, 94103";
     let pickup_name = "Pickup Location";
     let pickup_phone_number = "+1-555-555-5555";
@@ -60,50 +53,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             mode: "auto".to_owned()
         }
     };
+    let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
+    let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
 
-    // let mut request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
+    println!("Create Delivery Response => {:#?}", &create_delivery_response);
 
-    let response = create_delivery(
-        &access_token,
-        &customer_id,
-        &dropoff_address,
-        &dropoff_name,
-        &dropoff_phone_number,
-        &manifest,
-        manifest_items,
-        &pickup_address,
-        &pickup_name,
-        &pickup_phone_number,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        None,
-        Some(test_specifications),
-    ).await?;
-
-    println!(" Response => {:#?}", response);
     Ok(())
 }
 

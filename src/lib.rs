@@ -1,3 +1,16 @@
+//! # Uber API
+//! 
+//! ### uber_api is a crate that has the relevant DaaS endpoints to make Uber Direct API calls. This allows you to call the relevant API you want and not have to worry about how Uber wants to receive and handle the data.
+//! 
+//! - The functions state which API can be called, the full documentation of that endpoint along with all the parameters needed for it, the complete Uber Direct docs - last updated 9/2/2023 - can be found within each function. The general flow is that each endpoint takes a request struct as its parameter. The docs for the direct parameters are also shown at each request struct. Create the request struct with the relevant information and simply pass that into the function to call the Uber Direct API.
+//! 
+//! - At the time of creation, access to these APIs may require written approval from Uber. Once successful, they will provide you with the relevant customer_id, client_id, and client_secret needed for Authentication.
+//! 
+//! If you want to test that your authentication codes work, an example has been setup for you to run. Clone the repo: [Uber API](https://www.github.com/robinjonker/uber) and run the main file, ensuring you pass in the relevant auth fields as parameters
+//! 
+//! Example: 
+//! ``` cargo run -- --customer-id="1234" --client-id="xyz" --client-secret="xyz" ```
+
 #[macro_use]
 extern crate serde_derive;
 
@@ -40,16 +53,6 @@ pub use models::{
         PODRetrievalResponse
     },
 };
-    
-use models::general::{
-        LocalDateTime,
-        ManifestItem,
-        DeliverableAction,
-        VerificationRequirement,
-        UndeliverableAction,
-        TestSpecifications
-    };
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 1. Auth: POST https://login.uber.com/oauth/v2/token
@@ -77,22 +80,13 @@ use models::general::{
 /// | unauthorized      | Invalid OAuth 2.0 credentials provided.       |
 ///
 pub async fn auth(
-    client_id: &str,
-    client_secret: &str,
-    grant_type: Option<&str>,
-    scope: Option<&str>,
+    auth_request: AuthRequest
 ) -> Result<AuthResponse, UberError> {
-    let request = AuthRequest {
-        client_id: client_id.to_string(),
-        client_secret: client_secret.to_string(),
-        grant_type: grant_type.map(|s| s.to_string()),
-        scope: scope.map(|s| s.to_string()),
-    };
 
     let client = Client::new();
     let url = "https://login.uber.com/oauth/v2/token";
     let content_type = HeaderValue::from_str("application/x-www-form-urlencoded")?;
-    let body = serde_urlencoded::to_string(&request)?;
+    let body = serde_urlencoded::to_string(&auth_request)?;
 
     let res = client.post(&*url)
         .header(CONTENT_TYPE, content_type)
@@ -179,37 +173,8 @@ pub async fn auth(
 pub async fn create_quote(
     access_token: &str,
     customer_id: &str,
-    pickup_address: &str,
-    dropoff_address: &str,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
-    dropoff_phone_number: Option<&str>,
-    pickup_latitude: Option<f64>,
-    pickup_longitude: Option<f64>,
-    pickup_phone_number: Option<&str>,
-    pickup_ready_dt: Option<LocalDateTime>,
-    pickup_deadline_dt: Option<LocalDateTime>,
-    dropoff_ready_dt: Option<LocalDateTime>,
-    dropoff_deadline_dt: Option<LocalDateTime>,
-    manifest_total_value: Option<u32>,
-    external_store_id: Option<&str>,
+    create_quote_request: CreateQuoteRequest,
 ) -> Result<CreateQuoteResponse, UberError> {
-    let request = CreateQuoteRequest {
-        pickup_address: pickup_address.to_string(),
-        dropoff_address: dropoff_address.to_string(),
-        dropoff_latitude,
-        dropoff_longitude,
-        dropoff_phone_number: dropoff_phone_number.map(|s| s.to_string()),
-        pickup_latitude,
-        pickup_longitude,
-        pickup_phone_number: pickup_phone_number.map(|s| s.to_string()),
-        pickup_ready_dt,
-        pickup_deadline_dt,
-        dropoff_ready_dt,
-        dropoff_deadline_dt,
-        manifest_total_value,
-        external_store_id: external_store_id.map(|s| s.to_string()),
-    };
 
     let client = Client::new();
     let url = format!(
@@ -219,11 +184,12 @@ pub async fn create_quote(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
+    let body = serde_json::to_string(&create_quote_request)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request)?)
+        .body(body)
         .send()
         .await?;
 
@@ -627,79 +593,8 @@ pub async fn create_quote(
 pub async fn create_delivery(
     access_token: &str,
     customer_id: &str,
-    dropoff_address: &str,
-    dropoff_name: &str,
-    dropoff_phone_number: &str,
-    manifest: &str,
-    manifest_items: Vec<ManifestItem>,
-    pickup_address: &str,
-    pickup_name: &str,
-    pickup_phone_number: &str,
-    deliverable_action: Option<DeliverableAction>,
-    dropoff_business_name: Option<&str>,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
-    dropoff_notes: Option<&str>,
-    dropoff_seller_notes: Option<&str>,
-    dropoff_verification: Option<VerificationRequirement>,
-    manifest_reference: Option<&str>,
-    manifest_total_value: Option<u32>,
-    pickup_business_name: Option<&str>,
-    pickup_latitude: Option<f64>,
-    pickup_longitude: Option<f64>,
-    pickup_notes: Option<&str>,
-    pickup_verification: Option<VerificationRequirement>,
-    quote_id: Option<&str>,
-    undeliverable_action: Option<UndeliverableAction>,
-    pickup_ready_dt: Option<LocalDateTime>,
-    pickup_deadline_dt: Option<LocalDateTime>,
-    dropoff_ready_dt: Option<LocalDateTime>,
-    dropoff_deadline_dt: Option<LocalDateTime>,
-    requires_dropoff_signature: Option<bool>,
-    requires_id: Option<bool>,
-    tip: Option<u32>,
-    idempotency_key: Option<&str>,
-    external_store_id: Option<&str>,
-    return_verification: Option<VerificationRequirement>,
-    test_specifications: Option<TestSpecifications>,
+    create_delivery_request: CreateDeliveryRequest,
 ) -> Result<CreateDeliveryResponse, UberError> {
-    let request = CreateDeliveryRequest {
-        dropoff_address: dropoff_address.to_string(),
-        dropoff_name: dropoff_name.to_string(),
-        dropoff_phone_number: dropoff_phone_number.to_string(),
-        manifest: manifest.to_string(),
-        manifest_items,
-        pickup_address: pickup_address.to_string(),
-        pickup_name: pickup_name.to_string(),
-        pickup_phone_number: pickup_phone_number.to_string(),
-        deliverable_action,
-        dropoff_business_name: dropoff_business_name.map(|s| s.to_string()),
-        dropoff_latitude,
-        dropoff_longitude,
-        dropoff_notes: dropoff_notes.map(|s| s.to_string()),
-        dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
-        dropoff_verification,
-        manifest_reference: manifest_reference.map(|s| s.to_string()),
-        manifest_total_value,
-        pickup_business_name: pickup_business_name.map(|s| s.to_string()),
-        pickup_latitude,
-        pickup_longitude,
-        pickup_notes: pickup_notes.map(|s| s.to_string()),
-        pickup_verification,
-        quote_id: quote_id.map(|s| s.to_string()),
-        undeliverable_action,
-        pickup_ready_dt,
-        pickup_deadline_dt,
-        dropoff_ready_dt,
-        dropoff_deadline_dt,
-        requires_dropoff_signature,
-        requires_id,
-        tip,
-        idempotency_key: idempotency_key.map(|s| s.to_string()),
-        external_store_id: external_store_id.map(|s| s.to_string()),
-        return_verification,
-        test_specifications,
-    };
 
     let client = Client::new();
     let url = format!(
@@ -709,13 +604,7 @@ pub async fn create_delivery(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
-
-
-    println!("Create Delivery Request: => '{:#?}'\n", request);
-
-    let body = serde_json::to_string(&request)?;
-
-    println!("CDR after serde_json::to_string: => '{}'\n", body);
+    let body = serde_json::to_string(&create_delivery_request)?;
     
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
@@ -724,13 +613,7 @@ pub async fn create_delivery(
         .send()
         .await?;
 
-    println!("Res: => '{:#?}'\n", res);
-
     let response_body = res.text().await?;
-
-    // This message shows the error, possibly an error with regard to the ManifestItems paramter that is passed to Uber endpoint
-    println!("Response body .text().await?: => {}\n", response_body);
-
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok(response_data)
@@ -753,6 +636,7 @@ pub async fn get_delivery(
     customer_id: &str,
     delivery_id: &str,
 ) -> Result<GetDeliveryResponse, UberError> {
+
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}",
@@ -822,31 +706,8 @@ pub async fn update_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-    dropoff_notes: Option<&str>,
-    dropoff_seller_notes: Option<&str>,
-    dropoff_verification: Option<VerificationRequirement>,
-    manifest_reference: Option<&str>,
-    pickup_notes: Option<&str>,
-    pickup_verification: Option<VerificationRequirement>,
-    requires_dropoff_signature: Option<bool>,
-    requires_id: Option<bool>,
-    tip_by_customer: Option<u32>,
-    dropoff_latitude: Option<f64>,
-    dropoff_longitude: Option<f64>,
+    update_delivery_request: UpdateDeliveryRequest,
 ) -> Result<UpdateDeliveryResponse, UberError> {
-    let request = UpdateDeliveryRequest {
-        dropoff_notes: dropoff_notes.map(|s| s.to_string()),
-        dropoff_seller_notes: dropoff_seller_notes.map(|s| s.to_string()),
-        dropoff_verification,
-        manifest_reference: manifest_reference.map(|s| s.to_string()),
-        pickup_notes: pickup_notes.map(|s| s.to_string()),
-        pickup_verification,
-        requires_dropoff_signature,
-        requires_id,
-        tip_by_customer,
-        dropoff_latitude,
-        dropoff_longitude,
-    };
 
     let client = Client::new();
     let url = format!(
@@ -857,11 +718,12 @@ pub async fn update_delivery(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
+    let body = serde_json::to_string(&update_delivery_request)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request)?)
+        .body(body)
         .send()
         .await?;
 
@@ -893,6 +755,7 @@ pub async fn cancel_delivery(
     customer_id: &str,
     delivery_id: &str,
 ) -> Result<CancelDeliveryResponse, UberError> {
+
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries/{}/cancel",
@@ -1024,13 +887,8 @@ pub async fn pod_retrieval(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-    waypoint: &str,
-    type_of_waypoint: &str,
+    pod_retrieval_request: PODRetrievalRequest,
 ) -> Result<PODRetrievalResponse, UberError> {
-    let request = PODRetrievalRequest {
-        waypoint: waypoint.to_string(),
-        type_of_waypoint: type_of_waypoint.to_string(),
-    };
 
     let client = Client::new();
     let url = format!(
@@ -1041,11 +899,12 @@ pub async fn pod_retrieval(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
+    let body = serde_json::to_string(&pod_retrieval_request)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
-        .body(serde_json::to_string(&request)?)
+        .body(body)
         .send()
         .await?;
 
