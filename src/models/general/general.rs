@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use chrono::{DateTime, Local, TimeZone};
+use chrono::{DateTime, Local, TimeZone, NaiveDateTime};
 use std::fmt;
 use serde::de::Error as OtherError;
 
@@ -10,9 +10,9 @@ impl Serialize for LocalDateTime {
         where
             S: Serializer,
     {
-        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%S"))) // 2019-10-12T07:20:50.52Z
+        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%SZ"))) // 2019-10-12T07:20:50.52Z
     }
-}
+}// 2023-02-09T09:29:27Z
 
 impl<'de> Deserialize<'de> for LocalDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -20,8 +20,9 @@ impl<'de> Deserialize<'de> for LocalDateTime {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        let dt = Local.datetime_from_str(&s, "%YYYY-%mm-%ddT%H:%M:%S").map_err(D::Error::custom)?;
-        Ok(LocalDateTime(dt))
+        let dt = DateTime::parse_from_rfc3339(&s).unwrap();
+        // let dt = Local.datetime_from_str(&s, "%YYYY-%mm-%ddT%H:%M:%SZ").map_err(D::Error::custom)?;
+        Ok(LocalDateTime(dt.into()))
     }
 }
 
