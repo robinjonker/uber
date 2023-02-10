@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             mode: "auto".to_owned()
         }
     };
-    // let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
+    let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
     
     //let create_delivery_request = CreateDeliveryRequestTypes::StandardDelivery { dropoff_address: (), dropoff_name: (), dropoff_phone_number: (), manifest: (), manifest_items: (), pickup_address: (), pickup_name: (), pickup_phone_number: () };
     let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
