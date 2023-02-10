@@ -173,38 +173,116 @@ impl CreateDeliveryRequest {
             ..Default::default()
         }
     }
-    // pub fn for_text(prescription: &Prescription) -> Self {
-    //     Self {
-    //         prescription_id: prescription.id,
-    //         prescription_status: prescription.status_code.clone(),
-    //         content_type: CONTENT_TYPE_TEXT_PLAIN.to_string(),
-    //     }
-    // }
 }
 
-
-// #[derive(Serialize, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct PrescriptionJsonParams {
-//     prescription_id: i64,
-//     prescription_status: String,
-//     content_type: String,
-// }
-
-// impl PrescriptionJsonParams {
-//     pub fn for_text(prescription: &Prescription) -> Self {
-//         Self {
-//             prescription_id: prescription.id,
-//             prescription_status: prescription.status_code.clone(),
-//             content_type: CONTENT_TYPE_TEXT_PLAIN.to_string(),
-//         }
-//     }
-
-//     pub fn for_push_notification(prescription: &Prescription) -> Self {
-//         Self {
-//             prescription_id: prescription.id,
-//             prescription_status: prescription.status_code.clone(),
-//             content_type: CONTENT_TYPE_NOTIFICATION_PUSH.to_string(),
-//         }
-//     }
-// }
+// confirm the three basic different types - based on Zulzi use case
+pub enum CreateDeliveryRequestTypes {
+    StandardDelivery {
+        dropoff_address: String, 
+        dropoff_name: String, 
+        dropoff_phone_number: String, 
+        manifest: String, 
+        manifest_items: Vec<ManifestItem>, 
+        pickup_address: String, 
+        pickup_name: String, 
+        pickup_phone_number: String
+    },
+    VerifiableDelivery {
+        dropoff_address: String, 
+        dropoff_name: String, 
+        dropoff_phone_number: String, 
+        manifest: String, 
+        manifest_items: Vec<ManifestItem>, 
+        pickup_address: String, 
+        pickup_name: String, 
+        pickup_phone_number: String,
+        dropoff_verification: VerificationRequirement
+    },
+    ReturnableDelivery {
+        dropoff_address: String, 
+        dropoff_name: String, 
+        dropoff_phone_number: String, 
+        manifest: String, 
+        manifest_items: Vec<ManifestItem>, 
+        pickup_address: String, 
+        pickup_name: String, 
+        pickup_phone_number: String,
+        dropoff_verification: VerificationRequirement,
+        return_verification: VerificationRequirement
+    },
+}
+impl Into<CreateDeliveryRequest> for CreateDeliveryRequestTypes {
+    fn into(self) -> CreateDeliveryRequest {
+        match self {
+            CreateDeliveryRequestTypes::StandardDelivery {
+                dropoff_address, 
+                dropoff_name, 
+                dropoff_phone_number, 
+                manifest, 
+                manifest_items, 
+                pickup_address, 
+                pickup_name, 
+                pickup_phone_number } => {
+                    CreateDeliveryRequest {
+                        dropoff_address, 
+                        dropoff_name, 
+                        dropoff_phone_number, 
+                        manifest, 
+                        manifest_items, 
+                        pickup_address, 
+                        pickup_name, 
+                        pickup_phone_number,
+                        ..Default::default()
+                    }
+            },
+            CreateDeliveryRequestTypes::VerifiableDelivery { 
+                dropoff_address, 
+                dropoff_name, 
+                dropoff_phone_number,
+                manifest,
+                manifest_items, 
+                pickup_address,
+                pickup_name, 
+                pickup_phone_number,
+                dropoff_verification } => {
+                    CreateDeliveryRequest {
+                        dropoff_address, 
+                        dropoff_name, 
+                        dropoff_phone_number, 
+                        manifest, 
+                        manifest_items, 
+                        pickup_address, 
+                        pickup_name, 
+                        pickup_phone_number,
+                        dropoff_verification: Some(dropoff_verification),
+                        ..Default::default()
+                    }
+            },
+            CreateDeliveryRequestTypes::ReturnableDelivery { 
+                dropoff_address, 
+                dropoff_name, 
+                dropoff_phone_number,
+                manifest,
+                manifest_items, 
+                pickup_address,
+                pickup_name, 
+                pickup_phone_number,
+                dropoff_verification,
+                return_verification} => {
+                    CreateDeliveryRequest {
+                        dropoff_address, 
+                        dropoff_name, 
+                        dropoff_phone_number, 
+                        manifest, 
+                        manifest_items, 
+                        pickup_address, 
+                        pickup_name, 
+                        pickup_phone_number,
+                        dropoff_verification: Some(dropoff_verification),
+                        return_verification: Some(return_verification),
+                        ..Default::default()
+                    }
+            }
+        }
+    }
+}

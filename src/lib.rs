@@ -590,10 +590,10 @@ pub async fn create_quote(
 /// |429|	customer_limited	|Your account’s limits have been exceeded.|
 /// |500|	unknown_error|	An unknown error happened.|
 /// 
-pub async fn create_delivery(
+pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     access_token: &str,
     customer_id: &str,
-    create_delivery_request: CreateDeliveryRequest,
+    create_delivery_request: T,
 ) -> Result<CreateDeliveryResponse, UberError> {
 
     let client = Client::new();
@@ -604,6 +604,7 @@ pub async fn create_delivery(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
+    let create_delivery_request = create_delivery_request.into();
     let body = serde_json::to_string(&create_delivery_request)?;
     
     let res = client.post(&url)
