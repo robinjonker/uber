@@ -179,9 +179,9 @@ pub struct UndeliverableAction {
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct Dimensions {
-    length: Option<u32>,
-    height: Option<u32>,
-    depth: Option<u32>,
+    pub length: Option<u32>,
+    pub height: Option<u32>,
+    pub depth: Option<u32>,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
