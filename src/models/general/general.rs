@@ -156,25 +156,25 @@ impl ManifestItem {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DeliverableAction {
-    deliverable_action_meet_at_door: String,
-    deliverable_action_leave_at_door: String,
+    pub deliverable_action_meet_at_door: String,
+    pub deliverable_action_leave_at_door: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct VerificationRequirement {
-    signature: Option<bool>,
-    signature_requirement: Option<Vec<SignatureRequirement>>,
-    barcodes: Option<Vec<BarcodeRequirement>>,
-    pincode: Option<PincodeRequirement>,
-    package: Option<PackageRequirement>,
-    identification: Option<IdentificationRequirement>,
-    picture: Option<bool>,
+    pub signature: Option<bool>,
+    pub signature_requirement: Option<Vec<SignatureRequirement>>,
+    pub barcodes: Option<Vec<BarcodeRequirement>>,
+    pub pincode: Option<PincodeRequirement>,
+    pub package: Option<PackageRequirement>,
+    pub identification: Option<IdentificationRequirement>,
+    pub picture: Option<bool>,
 }
 
 #[derive(Serialize, Debug)]
 pub struct UndeliverableAction {
-    leave_at_door: String,
-    return_order: String,
+    pub leave_at_door: String,
+    pub return_order: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
@@ -186,32 +186,32 @@ pub struct Dimensions {
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct SignatureRequirement {
-    enabled: bool,
-    collect_signer_name: bool,
-    collect_signer_relationship: bool,
+    pub enabled: bool,
+    pub collect_signer_name: bool,
+    pub collect_signer_relationship: bool,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct BarcodeRequirement {
-    value: String,
-    type_of_barcode: String,
+    pub value: String,
+    pub type_of_barcode: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct PincodeRequirement {
-    enabled: bool,
-    value: String,
+    pub enabled: bool,
+    pub value: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct PackageRequirement {
-    bag_count: u32,
-    drink_count: u32,
+    pub bag_count: u32,
+    pub drink_count: u32,
 }
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct IdentificationRequirement {
-    min_age: u32,
+    pub min_age: u32,
 }
 
 #[derive(Serialize, Debug, Clone)]
