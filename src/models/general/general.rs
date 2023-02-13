@@ -163,8 +163,8 @@ pub struct DeliverableAction {
 #[derive(Serialize, Debug, Deserialize)]
 pub struct VerificationRequirement {
     pub signature: Option<bool>,
-    pub signature_requirement: Option<Vec<SignatureRequirement>>,
-    pub barcodes: Option<Vec<BarcodeRequirement>>,
+    pub signature_requirement: Vec<SignatureRequirement>,
+    pub barcodes: Vec<BarcodeRequirement>,
     pub pincode: Option<PincodeRequirement>,
     pub package: Option<PackageRequirement>,
     pub identification: Option<IdentificationRequirement>,
