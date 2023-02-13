@@ -19,7 +19,7 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
 
 mod errors;
-use errors::UberError;
+pub use errors::UberError;
 
 pub mod models;
 pub use models::{
