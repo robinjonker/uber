@@ -44,6 +44,7 @@ pub struct UpdateDeliveryResponse {
     pub undeliverable_reason: Option<String>,
     pub updated: Option<LocalDateTime>,
     pub uuid: Option<String>,
+    #[serde(rename = "return")]
     pub return_waypoint: Option<WaypointInfo>,
 }
 /// # Request Body Parameters
