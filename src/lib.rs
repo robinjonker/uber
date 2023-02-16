@@ -598,7 +598,7 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
 
     println!("access_token => {}\n", access_token);
     println!("customer_id => {}\n", customer_id);
-    println!("create_delivery_request => {}\n", create_delivery_request);
+    //println!("create_delivery_request => {:?}\n", create_delivery_request);
 
     let client = Client::new();
     let url = format!(
