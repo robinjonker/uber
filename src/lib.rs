@@ -664,6 +664,9 @@ pub async fn get_delivery(
         .await?;
 
     let response_body = res.text().await?;
+
+    println!("response_body => {}\n", response_body);
+    
     let response_data: GetDeliveryResponse = serde_json::from_str(&response_body)?;
 
     Ok(response_data)
