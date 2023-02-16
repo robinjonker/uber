@@ -47,12 +47,12 @@ impl From<LocalDateTime> for DateTime<Local> {
 
 #[derive(Deserialize, Debug)]
 pub struct CourierInfo {
-    pub name: String,
-    pub rating:	f64,	
-    pub vehicle_type: String,
-    pub phone_number: String,
-    pub location: LatLng,
-    pub img_href: String,
+    pub name: Option<String>,
+    pub rating:	Option<f64>,	
+    pub vehicle_type: Option<String>,
+    pub phone_number: Option<String>,
+    pub location: Option<LatLng>,
+    pub img_href: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
