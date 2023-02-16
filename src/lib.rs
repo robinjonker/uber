@@ -596,6 +596,10 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     create_delivery_request: T,
 ) -> Result<CreateDeliveryResponse, UberError> {
 
+    println!("access_token => {}\n", access_token);
+    println!("customer_id => {}\n", customer_id);
+    println!("create_delivery_request => {}\n", create_delivery_request);
+
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries",
@@ -606,6 +610,8 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     let authorization = HeaderValue::from_str(&auth_header)?;
     let create_delivery_request = create_delivery_request.into();
     let body = serde_json::to_string(&create_delivery_request)?;
+
+    println!("serde_json::to_string(&create_delivery_request) => {}\n", body);
     
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
@@ -615,6 +621,9 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .await?;
 
     let response_body = res.text().await?;
+
+    println!("response_body => {}\n", response_body);
+
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok(response_data)
