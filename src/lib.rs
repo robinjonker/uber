@@ -616,7 +616,12 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .send()
         .await?;
 
+    println!("res => {:?}", res);
+
     let response_body = res.text().await?;
+
+    println!("response_body => {:?}", response_body);
+    
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok(response_data)
