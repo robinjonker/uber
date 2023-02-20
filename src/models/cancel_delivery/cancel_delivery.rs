@@ -56,7 +56,10 @@ pub struct CancelDeliveryStatusResponse {
 
 pub fn convert_status_to_message(status_code: String) -> &'static str {
     let message = 
-        if status_code.contains("400") {
+        if status_code.contains("200") {
+            "Delivery successfully cancelled"
+        }
+        else if status_code.contains("400") {
             "Delivery cannot be cancelled."
         }
         else if status_code.contains("404") {
@@ -72,7 +75,7 @@ pub fn convert_status_to_message(status_code: String) -> &'static str {
             "Service is currently unavailable."
         }
         else {
-            "Error Unknown."
+            "Unknown Status Code."
         };
         message
 }
