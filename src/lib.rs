@@ -43,7 +43,9 @@ pub use models::{
         UpdateDeliveryResponse
     },
     cancel_delivery::{
-        CancelDeliveryResponse
+        CancelDeliveryResponse,
+        CancelDeliveryStatusResponse,
+        convert_status_to_message,
     },
     list_deliveries::{
         ListDeliveriesResponse
@@ -178,7 +180,7 @@ pub async fn create_quote(
 
     let client = Client::new();
     let url = format!(
-        "https://api.uber.com/v1/customers/{}/deliveryquotes",
+        "https://api.uber.com/v1/customers/{}/delivery_quotes",
         customer_id
     );
     let content_type = HeaderValue::from_str("application/json")?;
@@ -596,10 +598,6 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     create_delivery_request: T,
 ) -> Result<CreateDeliveryResponse, UberError> {
 
-    println!("access_token => {}\n", access_token);
-    println!("customer_id => {}\n", customer_id);
-    //println!("create_delivery_request => {:?}\n", create_delivery_request);
-
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/deliveries",
@@ -611,8 +609,6 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     let create_delivery_request = create_delivery_request.into();
     let body = serde_json::to_string(&create_delivery_request)?;
 
-    println!("serde_json::to_string(&create_delivery_request) => {}\n", body);
-    
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
@@ -621,9 +617,6 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .await?;
 
     let response_body = res.text().await?;
-
-    println!("response_body => {}\n", response_body);
-
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok(response_data)
@@ -664,9 +657,6 @@ pub async fn get_delivery(
         .await?;
 
     let response_body = res.text().await?;
-
-    println!("response_body => {}\n", response_body);
-    
     let response_data: GetDeliveryResponse = serde_json::from_str(&response_body)?;
 
     Ok(response_data)
@@ -767,7 +757,7 @@ pub async fn cancel_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-) -> Result<CancelDeliveryResponse, UberError> {
+) -> Result<CancelDeliveryStatusResponse, UberError> {
 
     let client = Client::new();
     let url = format!(
@@ -785,8 +775,10 @@ pub async fn cancel_delivery(
         .send()
         .await?;
 
-    let response_body = res.text().await?;
-    let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body)?;
+    let response_data =  CancelDeliveryStatusResponse {
+        status_code: (&res.status()).to_string(),
+        message: convert_status_to_message((&res.status()).to_string()).to_owned(),
+    };
 
     Ok(response_data)
 }

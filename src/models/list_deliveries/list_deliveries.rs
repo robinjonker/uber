@@ -16,7 +16,7 @@ pub struct ListDeliveriesResponse {
     pub data: Option<Vec<Delivery>>,
     pub next_href: Option<String>,
     pub object: Option<String>,
-    pub total_count: Option<u32>,
+    pub total_count: Option<i64>,
     pub url: Option<String>,
 }
 
@@ -28,7 +28,7 @@ pub struct Delivery {
     pub courier_imminent: Option<bool>,
     pub created: Option<LocalDateTime>,
     pub currency: Option<String>,
-    pub deliverable_action: Option<DeliverableAction>,
+    pub deliverable_action: Option<String>, //Option<DeliverableAction>,
     pub dropoff: Option<WaypointInfo>,
     pub dropoff_deadline: Option<LocalDateTime>,
     pub dropoff_eta: Option<LocalDateTime>,

@@ -1,13 +1,21 @@
+use std::default;
+
 use uber_api::{
     create_delivery, 
-    auth, 
+    auth,
+    create_quote, 
+    get_delivery,
+    update_delivery, 
+    cancel_delivery,
+    list_deliveries,
     AuthRequest, 
-    CreateDeliveryRequest, 
+    CreateDeliveryRequest,
+    UpdateDeliveryRequest,
     models::{general::{
         ManifestItem, 
         RoboCourierSpecification, 
         TestSpecifications
-    }, create_delivery::CreateDeliveryRequestTypes}
+    }, create_delivery::CreateDeliveryRequestTypes, create_quote}, CreateQuoteRequest
 };
 
 use clap::Parser;
@@ -55,10 +63,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
     
-    //let create_delivery_request = CreateDeliveryRequestTypes::StandardDelivery { dropoff_address: (), dropoff_name: (), dropoff_phone_number: (), manifest: (), manifest_items: (), pickup_address: (), pickup_name: (), pickup_phone_number: () };
     let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
 
     println!("Create Delivery Response => {:#?}", &create_delivery_response);
+
+    let create_quote_request = CreateQuoteRequest::new(pickup_address, dropoff_address);
+
+    let create_quote_response = create_quote(&access_token, &customer_id, create_quote_request).await?;
+
+    println!("Create Quote Response => {:#?}", &create_quote_response);
+
+    let delivery_id = create_delivery_response.id.unwrap();
+
+    let get_delivery_response = get_delivery(&access_token, &customer_id, &delivery_id).await?;
+
+    println!("Get Delivery Response => {:#?}", &get_delivery_response);
+
+    let update_delivery_request = UpdateDeliveryRequest{
+        dropoff_notes: Some("Introduce yourself as John John".to_owned()),
+        ..Default::default()
+    };
+
+    let update_delivery_response = update_delivery(&access_token, &customer_id, &delivery_id, update_delivery_request).await?;
+
+    println!("Update Delivery Response => {:#?}", &update_delivery_response);
+
+    // let cancel_delivery_response = cancel_delivery(&access_token, &customer_id, &delivery_id).await?;
+
+    // println!("Cancel Delivery Response => {:#?}", &cancel_delivery_response);
+
+    // let list_deliveries_response = list_deliveries(&access_token, &customer_id, None, None, None).await?;
+
+    // println!("List Deliveries Response => {:#?}", &list_deliveries_response);
 
     Ok(())
 }
