@@ -8,14 +8,17 @@ use uber_api::{
     update_delivery, 
     cancel_delivery,
     list_deliveries,
+    pod_retrieval,
     AuthRequest, 
     CreateDeliveryRequest,
     UpdateDeliveryRequest,
-    models::{general::{
+    CreateQuoteRequest, 
+    PODRetrievalRequest,
+    models::general::{
         ManifestItem, 
         RoboCourierSpecification, 
         TestSpecifications
-    }, create_delivery::CreateDeliveryRequestTypes, create_quote}, CreateQuoteRequest
+    }
 };
 
 use clap::Parser;
@@ -48,53 +51,62 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Access Key: => '{:#?}'", &auth_response);
 
-    let dropoff_address = "123 Main St, San Francisco, CA, 94103";
-    let dropoff_name = "Dropoff Location";
-    let dropoff_phone_number = "+1-555-555-5555";
-    let manifest = "Delivery items";
-    let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
-    let pickup_address = "456 Market St, San Francisco, CA, 94103";
-    let pickup_name = "Pickup Location";
-    let pickup_phone_number = "+1-555-555-5555";
-    let test_specifications = TestSpecifications {
-        robo_courier_specification: RoboCourierSpecification {
-            mode: "auto".to_owned()
-        }
-    };
-    let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
+    // let dropoff_address = "123 Main St, San Francisco, CA, 94103";
+    // let dropoff_name = "Dropoff Location";
+    // let dropoff_phone_number = "+1-555-555-5555";
+    // let manifest = "Delivery items";
+    // let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
+    // let pickup_address = "456 Market St, San Francisco, CA, 94103";
+    // let pickup_name = "Pickup Location";
+    // let pickup_phone_number = "+1-555-555-5555";
+    // let test_specifications = TestSpecifications {
+    //     robo_courier_specification: RoboCourierSpecification {
+    //         mode: "auto".to_owned()
+    //     }
+    // };
+    // let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
     
-    let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
+    // let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
 
-    println!("Create Delivery Response => {:#?}", &create_delivery_response);
+    // println!("Create Delivery Response => {:#?}", &create_delivery_response);
 
-    let create_quote_request = CreateQuoteRequest::new(pickup_address, dropoff_address);
+    // let create_quote_request = CreateQuoteRequest::new(pickup_address, dropoff_address);
 
-    let create_quote_response = create_quote(&access_token, &customer_id, create_quote_request).await?;
+    // let create_quote_response = create_quote(&access_token, &customer_id, create_quote_request).await?;
 
-    println!("Create Quote Response => {:#?}", &create_quote_response);
+    // println!("Create Quote Response => {:#?}", &create_quote_response);
 
-    let delivery_id = create_delivery_response.id.unwrap();
+    // let delivery_id = create_delivery_response.id.unwrap();
 
-    let get_delivery_response = get_delivery(&access_token, &customer_id, &delivery_id).await?;
+    // let get_delivery_response = get_delivery(&access_token, &customer_id, &delivery_id).await?;
 
-    println!("Get Delivery Response => {:#?}", &get_delivery_response);
+    // println!("Get Delivery Response => {:#?}", &get_delivery_response);
 
-    let update_delivery_request = UpdateDeliveryRequest{
-        dropoff_notes: Some("Introduce yourself as John John".to_owned()),
-        ..Default::default()
-    };
+    // let update_delivery_request = UpdateDeliveryRequest{
+    //     tip_by_customer: Some(5),
+    //     ..Default::default()
+    // };
 
-    let update_delivery_response = update_delivery(&access_token, &customer_id, &delivery_id, update_delivery_request).await?;
+    // let update_delivery_response = update_delivery(&access_token, &customer_id, &delivery_id, update_delivery_request).await?;
 
-    println!("Update Delivery Response => {:#?}", &update_delivery_response);
+    // println!("Update Delivery Response => {:#?}", &update_delivery_response);
 
     // let cancel_delivery_response = cancel_delivery(&access_token, &customer_id, &delivery_id).await?;
 
     // println!("Cancel Delivery Response => {:#?}", &cancel_delivery_response);
 
-    // let list_deliveries_response = list_deliveries(&access_token, &customer_id, None, None, None).await?;
+    // let list_deliveries_response = list_deliveries(&access_token, &customer_id, None, Some(1), None).await?;
 
     // println!("List Deliveries Response => {:#?}", &list_deliveries_response);
+
+    // let pod_retrieval_request = PODRetrievalRequest {
+    //     waypoint: "dropoff".to_string(),
+    //     type_of_waypoint: "signature".to_string(),
+    // };
+
+    // let pod_retrieval_response = pod_retrieval(&access_token, &customer_id, &delivery_id, pod_retrieval_request).await?;
+
+    // println!("Pod Retrieval Response => {:#?}", &pod_retrieval_response);
 
     Ok(())
 }

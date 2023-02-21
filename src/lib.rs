@@ -616,12 +616,7 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .send()
         .await?;
 
-    println!("res => {:?}", res);
-
     let response_body = res.text().await?;
-
-    println!("response_body => {:?}", response_body);
-    
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok(response_data)
@@ -827,10 +822,20 @@ pub async fn list_deliveries(
         url = format!("{}?filter={}", url, filter);
     }
     if let Some(limit) = limit {
-        url = format!("{}&limit={}", url, limit);
+        if url.contains("?") {
+            url = format!("{}&limit={}", url, limit);
+        }
+        else {
+            url = format!("{}?limit={}", url, limit);
+        }
     }
     if let Some(offset) = offset {
-        url = format!("{}&offset={}", url, offset);
+        if url.contains("?") {
+            url = format!("{}&offset={}", url, offset);
+        }
+        else {
+            url = format!("{}?offset={}", url, offset);
+        }
     }
 
     let content_type = HeaderValue::from_str("application/json")?;
