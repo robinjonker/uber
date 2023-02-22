@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::models::general::{
-    LocalDateTime
+    LocalDateTime,
+    StructuredAddress
 };
 
 /// # Request Body Parameters
@@ -26,8 +27,8 @@ use crate::models::general::{
 #[derive(Serialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateQuoteRequest {
-    pub pickup_address: String,
-    pub dropoff_address: String,
+    pub pickup_address: StructuredAddress,
+    pub dropoff_address: StructuredAddress,
     pub dropoff_latitude: Option<f64>,
     pub dropoff_longitude: Option<f64>,
     pub dropoff_phone_number: Option<String>,
@@ -43,11 +44,11 @@ pub struct CreateQuoteRequest {
 }
 impl CreateQuoteRequest {
     pub fn new<T: Into<String>>(
-        pickup_address: T, 
-        dropoff_address: T) -> Self {
+        pickup_address: StructuredAddress, 
+        dropoff_address: StructuredAddress) -> Self {
         CreateQuoteRequest {
-            pickup_address: pickup_address.into(),
-            dropoff_address: dropoff_address.into(),
+            pickup_address: pickup_address,
+            dropoff_address: dropoff_address,
             ..Default::default()
         }
     }
