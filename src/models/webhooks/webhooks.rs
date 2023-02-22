@@ -5,7 +5,7 @@ use crate::models::general::{
     ManifestInfo,
     RelatedDelivery,
     LatLng,
-    Address,
+    StructuredAddress,
     VerificationProof
 };
 
@@ -146,7 +146,7 @@ pub struct DeliveryData {
 /// |name|	string|	The name of the person at the waypoint|
 /// |phone_number|	string|	The phone number of the waypoint|
 /// |address|	string|	The address of the waypoint|
-/// |detailed_address|	Address|	The full address of the waypoint|
+/// |detailed_address|	StructuredAddress|	The full address of the waypoint|
 /// |location|	LatLng|	Geographic location (Latitude, Longitude) associated with the waypoint|
 /// |notes|	string|	Additional instructions at the waypoint location.|
 /// |verification|	VerificationProof|	The details about different verification types|
@@ -158,7 +158,7 @@ pub struct DeliveryInfo {
     pub name: String,
     pub phone_number: String,
     pub address: String,
-    pub detailed_address: Address,
+    pub detailed_address: StructuredAddress,
     pub location: LatLng,
     pub notes: String,
     pub verification: VerificationProof,

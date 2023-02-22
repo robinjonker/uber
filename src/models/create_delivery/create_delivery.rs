@@ -11,6 +11,7 @@ use crate::models::general::{
     WaypointInfo,
     ManifestInfo,
     RelatedDelivery,
+    StructuredAddress
 };
 /// # Request Body Parameters
 ///
@@ -54,12 +55,12 @@ use crate::models::general::{
 #[derive(Serialize, Debug, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateDeliveryRequest {
-    pub dropoff_address: String,
+    pub dropoff_address: StructuredAddress,
     pub dropoff_name: String,
     pub dropoff_phone_number: String,
     pub manifest: String,
     pub manifest_items: Vec<ManifestItem>,
-    pub pickup_address: String,
+    pub pickup_address: StructuredAddress,
     pub pickup_name: String,
     pub pickup_phone_number: String,
     pub deliverable_action: Option<DeliverableAction>,
@@ -130,43 +131,43 @@ pub struct CreateDeliveryResponse {
 
 impl CreateDeliveryRequest {
     pub fn new<T: Into<String>>(
-        dropoff_address: T, 
+        dropoff_address: StructuredAddress, 
         dropoff_name: T, 
         dropoff_phone_number: T, 
         manifest: T, 
         manifest_items: Vec<ManifestItem>, 
-        pickup_address: T, 
+        pickup_address: StructuredAddress, 
         pickup_name: T, 
         pickup_phone_number: T) -> Self {
         CreateDeliveryRequest {
-            dropoff_address: dropoff_address.into(),
+            dropoff_address: dropoff_address,
             dropoff_name: dropoff_name.into(),
             dropoff_phone_number: dropoff_phone_number.into(),
             manifest: manifest.into(),
             manifest_items,
-            pickup_address: pickup_address.into(),
+            pickup_address: pickup_address,
             pickup_name: pickup_name.into(),
             pickup_phone_number: pickup_phone_number.into(),
             ..Default::default()
         }
     }
     pub fn new_with_test<T: Into<String>>(
-        dropoff_address: T, 
+        dropoff_address: StructuredAddress, 
         dropoff_name: T, 
         dropoff_phone_number: T, 
         manifest: T, 
         manifest_items: Vec<ManifestItem>, 
-        pickup_address: T, 
+        pickup_address: StructuredAddress, 
         pickup_name: T, 
         pickup_phone_number: T,
         test_specifications: TestSpecifications) -> Self {
         CreateDeliveryRequest {
-            dropoff_address: dropoff_address.into(),
+            dropoff_address: dropoff_address,
             dropoff_name: dropoff_name.into(),
             dropoff_phone_number: dropoff_phone_number.into(),
             manifest: manifest.into(),
             manifest_items,
-            pickup_address: pickup_address.into(),
+            pickup_address: pickup_address,
             pickup_name: pickup_name.into(),
             pickup_phone_number: pickup_phone_number.into(),
             test_specifications: Some(test_specifications),
@@ -178,33 +179,33 @@ impl CreateDeliveryRequest {
 // confirm the three basic different types - based on Zulzi use case
 pub enum CreateDeliveryRequestTypes {
     StandardDelivery {
-        dropoff_address: String, 
+        dropoff_address: StructuredAddress, 
         dropoff_name: String, 
         dropoff_phone_number: String, 
         manifest: String, 
         manifest_items: Vec<ManifestItem>, 
-        pickup_address: String, 
+        pickup_address: StructuredAddress, 
         pickup_name: String, 
         pickup_phone_number: String
     },
     VerifiableDelivery {
-        dropoff_address: String, 
+        dropoff_address: StructuredAddress, 
         dropoff_name: String, 
         dropoff_phone_number: String, 
         manifest: String, 
         manifest_items: Vec<ManifestItem>, 
-        pickup_address: String, 
+        pickup_address: StructuredAddress, 
         pickup_name: String, 
         pickup_phone_number: String,
         dropoff_verification: VerificationRequirement
     },
     ReturnableDelivery {
-        dropoff_address: String, 
+        dropoff_address: StructuredAddress, 
         dropoff_name: String, 
         dropoff_phone_number: String, 
         manifest: String, 
         manifest_items: Vec<ManifestItem>, 
-        pickup_address: String, 
+        pickup_address: StructuredAddress, 
         pickup_name: String, 
         pickup_phone_number: String,
         dropoff_verification: VerificationRequirement,

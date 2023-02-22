@@ -17,7 +17,8 @@ use uber_api::{
     models::general::{
         ManifestItem, 
         RoboCourierSpecification, 
-        TestSpecifications
+        TestSpecifications,
+        StructuredAddress
     }
 };
 
@@ -51,12 +52,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Access Key: => '{:#?}'", &auth_response);
 
-    // let dropoff_address = "123 Main St, San Francisco, CA, 94103";
+    // let dropoff_address = StructuredAddress {
+    //     street_address_1: "123 Main St".to_string(),
+    //     city: "San Francisco".to_string(),
+    //     state: "CA".to_string(),
+    //     zip_code: "94103".to_string(),
+    //     ..Default::default()
+    // };
     // let dropoff_name = "Dropoff Location";
     // let dropoff_phone_number = "+1-555-555-5555";
     // let manifest = "Delivery items";
     // let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
-    // let pickup_address = "456 Market St, San Francisco, CA, 94103";
+    // let pickup_address = StructuredAddress {
+    //     street_address_1: "456 Market St".to_string(),
+    //     city: "San Francisco".to_string(),
+    //     state: "CA".to_string(),
+    //     zip_code: "94103".to_string(),
+    //     ..Default::default()
+    // };
     // let pickup_name = "Pickup Location";
     // let pickup_phone_number = "+1-555-555-5555";
     // let test_specifications = TestSpecifications {

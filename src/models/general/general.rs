@@ -79,7 +79,7 @@ pub struct WaypointInfo {
     pub name: String,
     pub phone_number: String,
     pub address: String,
-    pub detailed_address: Address,
+    pub detailed_address: StructuredAddress,
     pub notes: Option<String>,
     pub seller_notes: Option<String>,
     pub courier_notes: Option<String>,
@@ -89,8 +89,8 @@ pub struct WaypointInfo {
     pub external_store_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct Address {
+#[derive(Deserialize, Debug, Serialize, Default)]
+pub struct StructuredAddress { 
     pub street_address_1: String,
     pub street_address_2: Option<String>,
     pub city: String,
