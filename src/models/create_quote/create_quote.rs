@@ -43,7 +43,7 @@ pub struct CreateQuoteRequest {
     pub external_store_id: Option<String>,
 }
 impl CreateQuoteRequest {
-    pub fn new<T: Into<String>>(
+    pub fn new(
         pickup_address: StructuredAddress, 
         dropoff_address: StructuredAddress) -> Self {
         CreateQuoteRequest {
