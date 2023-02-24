@@ -1,7 +1,6 @@
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use chrono::{DateTime, Local, TimeZone, NaiveDateTime};
+use chrono::{DateTime, Local};
 use std::fmt;
-use serde::de::Error as OtherError;
 
 pub struct LocalDateTime(DateTime<Local>);
 
@@ -89,7 +88,7 @@ pub struct WaypointInfo {
     pub external_store_id: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Serialize, Default)]
+#[derive(Deserialize, Debug, Serialize, Default, Clone)]
 pub struct StructuredAddress { 
     pub street_address_1: String,
     pub street_address_2: Option<String>,

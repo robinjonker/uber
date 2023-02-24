@@ -3,7 +3,6 @@ use serde::{Deserialize};
 use crate::models::general::{
     CourierInfo,
     LocalDateTime,
-    DeliverableAction,
     WaypointInfo,
     ManifestInfo,
     ManifestItem,
@@ -18,7 +17,7 @@ pub struct GetDeliveryResponse {
     pub courier_imminent: Option<bool>,
     pub created: Option<LocalDateTime>,
     pub currency: Option<String>,
-    pub deliverable_action: Option<String>,//Option<DeliverableAction>
+    pub deliverable_action: Option<String>,
     pub dropoff: Option<WaypointInfo>,
     pub dropoff_deadline: Option<LocalDateTime>,
     pub dropoff_eta: Option<LocalDateTime>,
