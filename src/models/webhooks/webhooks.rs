@@ -41,6 +41,15 @@ pub struct DeliveryStatus {
     pub route_id: Option<String>,
 }
 
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct DeliveryStatusResponse {
+    pub success: bool,
+    pub message: Option<String>,
+}
+
+
 /// Courier Update Webhook Event Definitions
 /// |Name|	Type|	Description|
 /// | :--- | :--- | :--- |
