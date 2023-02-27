@@ -119,9 +119,9 @@ pub struct DeliveryData {
     pub tip: i64,
     pub manifest: ManifestInfo,
     pub manifest_items: Vec<ManifestItem>,
-    pub pickup: DeliveryInfo,
-    pub dropoff: DeliveryInfo,
-    pub courier: CourierInfo,
+    pub pickup: Option<DeliveryInfo>,
+    pub dropoff: Option<DeliveryInfo>,
+    pub courier: Option<CourierInfo>,
     pub live_mode: bool,
     pub related_deliveries: Vec<RelatedDelivery>,
     pub tracking_url: String,
@@ -155,14 +155,14 @@ pub struct DeliveryData {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct DeliveryInfo {
-    pub name: String,
-    pub phone_number: String,
-    pub address: String,
-    pub detailed_address: StructuredAddress,
-    pub location: LatLng,
-    pub notes: String,
-    pub verification: VerificationProof,
-    pub courier_notes: String,
+    pub name: Option<String>,
+    pub phone_number: Option<String>,
+    pub address: Option<String>,
+    pub detailed_address: Option<StructuredAddress>,
+    pub location: Option<LatLng>,
+    pub notes: Option<String>,
+    pub verification: Option<VerificationProof>,
+    pub courier_notes: Option<String>,
 }
 
 /// # DeliveryData - OrderInfo
