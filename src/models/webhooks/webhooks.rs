@@ -30,15 +30,15 @@ use crate::models::general::{
 pub struct DeliveryStatus {
     pub status: String,
     pub kind: String, 
-    pub created: LocalDateTime, 
-    pub live_mode: bool,  
-    pub delivery_id: String, 
-    pub id: String,
-    pub data: DeliveryData, 
-    pub customer_id: String, 
-    pub developer_id: String, 
-    pub account_id: String, 
-    pub route_id: String,
+    pub created: Option<LocalDateTime>, 
+    pub live_mode: Option<bool>,  
+    pub delivery_id: Option<String>, 
+    pub id: Option<String>,
+    pub data: Option<DeliveryData>, 
+    pub customer_id: Option<String>, 
+    pub developer_id: Option<String>, 
+    pub account_id: Option<String>, 
+    pub route_id: Option<String>,
 }
 
 /// Courier Update Webhook Event Definitions
