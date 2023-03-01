@@ -183,7 +183,7 @@ impl ManifestItem {
 pub struct VerificationRequirement {
     pub signature: Option<bool>,
     pub signature_requirement: Option<SignatureRequirement>,
-    pub barcodes: Option<Vec<BarcodeRequirement>>,
+    pub barcodes: Vec<BarcodeRequirement>,
     pub pincode: Option<PincodeRequirement>,
     pub package: Option<PackageRequirement>,
     pub identification: Option<IdentificationRequirement>,
