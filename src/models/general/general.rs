@@ -2,6 +2,7 @@ use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use chrono::{DateTime, Local};
 use std::fmt;
 
+
 pub struct LocalDateTime(DateTime<Local>);
 
 impl Serialize for LocalDateTime {
@@ -99,6 +100,31 @@ pub struct StructuredAddress {
     pub sublocality_level_1: Option<String>,
 }
 
+impl fmt::Display for StructuredAddress {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut address = self.street_address_1.clone();
+        if let Some(street_address_2) = &self.street_address_2 {
+            address.push_str(&format!(", {}", street_address_2));
+        }
+        write!(
+            f,
+            "{}, {}, {}, {}",
+            address,
+            self.city,
+            self.state,
+            self.zip_code
+        )?;
+        if let Some(sublocality_level_1) = &self.sublocality_level_1 {
+            write!(f, ", {}", sublocality_level_1)?;
+        }
+        if let Some(country) = &self.country {
+            write!(f, ", {}", country)?;
+        }
+        Ok(())
+    }
+}
+
+
 #[derive(Deserialize, Debug)]
 pub struct VerificationProof {
     pub signature: SignatureProof,
@@ -153,27 +179,15 @@ impl ManifestItem {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct DeliverableAction {
-    pub deliverable_action_meet_at_door: String,
-    pub deliverable_action_leave_at_door: String,
-}
-
 #[derive(Serialize, Debug, Deserialize)]
 pub struct VerificationRequirement {
     pub signature: Option<bool>,
-    pub signature_requirement: Vec<SignatureRequirement>,
-    pub barcodes: Vec<BarcodeRequirement>,
+    pub signature_requirement: Option<SignatureRequirement>,
+    pub barcodes: Option<Vec<BarcodeRequirement>>,
     pub pincode: Option<PincodeRequirement>,
     pub package: Option<PackageRequirement>,
     pub identification: Option<IdentificationRequirement>,
     pub picture: Option<bool>,
-}
-
-#[derive(Serialize, Debug)]
-pub struct UndeliverableAction {
-    pub leave_at_door: String,
-    pub return_order: String,
 }
 
 #[derive(Serialize, Debug, Deserialize)]

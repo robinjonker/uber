@@ -18,7 +18,7 @@ use uber_api::{
         ManifestItem, 
         RoboCourierSpecification, 
         TestSpecifications,
-        StructuredAddress
+        StructuredAddress,
     }
 };
 
@@ -77,8 +77,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //         mode: "auto".to_owned()
     //     }
     // };
-    // let create_delivery_request = CreateDeliveryRequest::new_with_test(dropoff_address, dropoff_name, dropoff_phone_number, manifest, manifest_items, pickup_address, pickup_name, pickup_phone_number, test_specifications);
-    
+    // let create_delivery_request = CreateDeliveryRequest{
+    //     dropoff_address: dropoff_address.to_string(),
+    //     dropoff_name: dropoff_name.to_string(),
+    //     dropoff_phone_number: dropoff_phone_number.to_string(),
+    //     manifest: manifest.to_string(),
+    //     manifest_items,
+    //     pickup_address: pickup_address.to_string(),
+    //     pickup_name: pickup_name.to_string(),
+    //     pickup_phone_number: pickup_phone_number.to_string(),
+    //     deliverable_action: Some("deliverable_action_meet_at_door".to_string()),
+    //     test_specifications: Some(test_specifications),
+    //     ..Default::default()
+    // };
     // let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
 
     // println!("Create Delivery Response => {:#?}", &create_delivery_response);

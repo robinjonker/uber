@@ -3,9 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::general::{
     LocalDateTime,
     ManifestItem,
-    DeliverableAction,
     VerificationRequirement,
-    UndeliverableAction,
     TestSpecifications,
     CourierInfo,
     WaypointInfo,
@@ -55,15 +53,15 @@ use crate::models::general::{
 #[derive(Serialize, Debug, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateDeliveryRequest {
-    pub dropoff_address: StructuredAddress,
+    pub dropoff_address: String, // StructuredAddress.to_string(),
     pub dropoff_name: String,
     pub dropoff_phone_number: String,
     pub manifest: String,
     pub manifest_items: Vec<ManifestItem>,
-    pub pickup_address: StructuredAddress,
+    pub pickup_address: String, // StructuredAddress.to_string(),
     pub pickup_name: String,
     pub pickup_phone_number: String,
-    pub deliverable_action: Option<DeliverableAction>,
+    pub deliverable_action: Option<String>, // check RTODO
     pub dropoff_business_name: Option<String>,
     pub dropoff_latitude: Option<f64>,
     pub dropoff_longitude: Option<f64>,
@@ -78,7 +76,7 @@ pub struct CreateDeliveryRequest {
     pub pickup_notes: Option<String>,
     pub pickup_verification: Option<VerificationRequirement>,
     pub quote_id: Option<String>,
-    pub undeliverable_action: Option<UndeliverableAction>,
+    pub undeliverable_action: Option<i8>,
     pub pickup_ready_dt: Option<LocalDateTime>,
     pub pickup_deadline_dt: Option<LocalDateTime>,
     pub dropoff_ready_dt: Option<LocalDateTime>,
@@ -140,12 +138,12 @@ impl CreateDeliveryRequest {
         pickup_name: T, 
         pickup_phone_number: T) -> Self {
         CreateDeliveryRequest {
-            dropoff_address: dropoff_address,
+            dropoff_address: dropoff_address.to_string(),
             dropoff_name: dropoff_name.into(),
             dropoff_phone_number: dropoff_phone_number.into(),
             manifest: manifest.into(),
             manifest_items,
-            pickup_address: pickup_address,
+            pickup_address: pickup_address.to_string(),
             pickup_name: pickup_name.into(),
             pickup_phone_number: pickup_phone_number.into(),
             ..Default::default()
@@ -162,12 +160,12 @@ impl CreateDeliveryRequest {
         pickup_phone_number: T,
         test_specifications: TestSpecifications) -> Self {
         CreateDeliveryRequest {
-            dropoff_address: dropoff_address,
+            dropoff_address: dropoff_address.to_string(),
             dropoff_name: dropoff_name.into(),
             dropoff_phone_number: dropoff_phone_number.into(),
             manifest: manifest.into(),
             manifest_items,
-            pickup_address: pickup_address,
+            pickup_address: pickup_address.to_string(),
             pickup_name: pickup_name.into(),
             pickup_phone_number: pickup_phone_number.into(),
             test_specifications: Some(test_specifications),
@@ -225,12 +223,12 @@ impl Into<CreateDeliveryRequest> for CreateDeliveryRequestTypes {
                 pickup_name, 
                 pickup_phone_number } => {
                     CreateDeliveryRequest {
-                        dropoff_address, 
+                        dropoff_address: dropoff_address.to_string(), 
                         dropoff_name, 
                         dropoff_phone_number, 
                         manifest, 
                         manifest_items, 
-                        pickup_address, 
+                        pickup_address: pickup_address.to_string(), 
                         pickup_name, 
                         pickup_phone_number,
                         ..Default::default()
@@ -247,12 +245,12 @@ impl Into<CreateDeliveryRequest> for CreateDeliveryRequestTypes {
                 pickup_phone_number,
                 dropoff_verification } => {
                     CreateDeliveryRequest {
-                        dropoff_address, 
+                        dropoff_address: dropoff_address.to_string(),
                         dropoff_name, 
                         dropoff_phone_number, 
                         manifest, 
                         manifest_items, 
-                        pickup_address, 
+                        pickup_address: pickup_address.to_string(),
                         pickup_name, 
                         pickup_phone_number,
                         dropoff_verification: Some(dropoff_verification),
@@ -271,12 +269,12 @@ impl Into<CreateDeliveryRequest> for CreateDeliveryRequestTypes {
                 dropoff_verification,
                 return_verification} => {
                     CreateDeliveryRequest {
-                        dropoff_address, 
+                        dropoff_address: dropoff_address.to_string(), 
                         dropoff_name, 
                         dropoff_phone_number, 
                         manifest, 
                         manifest_items, 
-                        pickup_address, 
+                        pickup_address: pickup_address.to_string(), 
                         pickup_name, 
                         pickup_phone_number,
                         dropoff_verification: Some(dropoff_verification),
