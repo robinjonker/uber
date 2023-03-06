@@ -44,36 +44,3 @@ pub struct CancelDeliveryResponse {
     #[serde(rename = "return")]
     pub return_waypoint: Option<WaypointInfo>,
 }
-
-#[derive(Deserialize, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct CancelDeliveryStatusResponse {
-    pub status_code: String,
-    pub message: String,
-}
-
-pub fn convert_status_to_message(status_code: String) -> &'static str {
-    let message = 
-        if status_code.contains("200") {
-            "Delivery successfully cancelled"
-        }
-        else if status_code.contains("400") {
-            "Delivery cannot be cancelled."
-        }
-        else if status_code.contains("404") {
-            "The requested delivery does not exist."
-        }
-        else if status_code.contains("408") {
-            "The request timed out."
-        }
-        else if status_code.contains("500") {
-            "An unknown error happened."
-        }
-        else if status_code.contains("503") {
-            "Service is currently unavailable."
-        }
-        else {
-            "Unknown Status Code."
-        };
-        message
-}

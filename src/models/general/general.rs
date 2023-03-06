@@ -2,7 +2,6 @@ use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use chrono::{DateTime, Local};
 use std::fmt;
 
-
 pub struct LocalDateTime(DateTime<Local>);
 
 impl Serialize for LocalDateTime {
@@ -156,7 +155,7 @@ pub struct PincodeProof {
     pub entered: String,
 }
 
-#[derive(Serialize, Default, Debug, Deserialize)]
+#[derive(Serialize, Default, Debug, Deserialize, Clone)]
 pub struct ManifestItem {
     pub name: String,
     pub quantity: u32,
@@ -190,7 +189,7 @@ pub struct VerificationRequirement {
     pub picture: Option<bool>,
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct Dimensions {
     pub length: Option<u32>,
     pub height: Option<u32>,
@@ -204,7 +203,7 @@ pub struct SignatureRequirement {
     pub collect_signer_relationship: bool,
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct BarcodeRequirement {
     pub value: String,
     pub type_of_barcode: String,
