@@ -617,9 +617,9 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .send()
         .await?;
 
-    let response_body = res.text().await?;
-
     log::info!("\nSTATUS CODE RES => {}\n", res.status());
+
+    let response_body = res.text().await?;
 
     log::info!("JSON response body of Create Req for Uber API {:#?}", response_body);
 
