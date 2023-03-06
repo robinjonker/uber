@@ -38,7 +38,7 @@ pub struct CreateQuoteRequest {
     pub pickup_deadline_dt: Option<LocalDateTime>,
     pub dropoff_ready_dt: Option<LocalDateTime>,
     pub dropoff_deadline_dt: Option<LocalDateTime>,
-    pub manifest_total_value: Option<f64>,
+    pub manifest_total_value: Option<i64>,
     pub external_store_id: Option<String>,
 }
 impl CreateQuoteRequest {

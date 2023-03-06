@@ -69,7 +69,7 @@ pub struct CreateDeliveryRequest {
     pub dropoff_seller_notes: Option<String>,
     pub dropoff_verification: Option<VerificationRequirement>,
     pub manifest_reference: Option<String>,
-    pub manifest_total_value: Option<f64>,
+    pub manifest_total_value: Option<i64>,
     pub pickup_business_name: Option<String>,
     pub pickup_latitude: Option<f64>,
     pub pickup_longitude: Option<f64>,
