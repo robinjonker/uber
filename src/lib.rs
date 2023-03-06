@@ -176,6 +176,7 @@ pub async fn create_quote(
     create_quote_request: CreateQuoteRequest,
 ) -> Result<(CreateQuoteResponse, String), UberError> {
 
+
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/delivery_quotes",
@@ -607,6 +608,8 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     let create_delivery_request = create_delivery_request.into();
     let body = serde_json::to_string(&create_delivery_request)?;
 
+    log::info!("JSON request body of Create Req for Uber API {:#?}", body);
+
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
@@ -615,6 +618,9 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .await?;
 
     let response_body = res.text().await?;
+
+    log::info!("JSON response body of Create Req for Uber API {:#?}", response_body);
+
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
     Ok((response_data, response_body))
