@@ -180,12 +180,19 @@ impl ManifestItem {
 
 #[derive(Serialize, Debug, Deserialize)]
 pub struct VerificationRequirement {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub signature: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub signature_requirement: Option<SignatureRequirement>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
     pub barcodes: Vec<BarcodeRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pincode: Option<PincodeRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub package: Option<PackageRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub identification: Option<IdentificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub picture: Option<bool>,
 }
 
