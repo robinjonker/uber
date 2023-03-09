@@ -14,7 +14,7 @@
 #[macro_use]
 extern crate serde_derive;
 
-use reqwest::{Client};
+use reqwest::{Client, StatusCode};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::header::AUTHORIZATION;
 
@@ -174,7 +174,7 @@ pub async fn create_quote(
     access_token: &str,
     customer_id: &str,
     create_quote_request: CreateQuoteRequest,
-) -> Result<(CreateQuoteResponse, String), UberError> {
+) -> Result<(CreateQuoteResponse, String, StatusCode), UberError> {
 
 
     let client = Client::new();
@@ -194,10 +194,14 @@ pub async fn create_quote(
         .send()
         .await?;
 
+    let status = res.status();
+
+    log::info!("\nSTATUS CODE RES => {}\n", res.status());
+    
     let response_body = res.text().await?;
     let response_data: CreateQuoteResponse = serde_json::from_str(&response_body)?;
 
-    Ok((response_data, response_body))
+    Ok((response_data, response_body, status))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -595,7 +599,7 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     access_token: &str,
     customer_id: &str,
     create_delivery_request: T,
-) -> Result<(CreateDeliveryResponse, String), UberError> {
+) -> Result<(CreateDeliveryResponse, String, StatusCode), UberError> {
 
     let client = Client::new();
     let url = format!(
@@ -617,6 +621,8 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
         .send()
         .await?;
 
+    let status = res.status();
+
     log::info!("\nSTATUS CODE RES => {}\n", res.status());
 
     let response_body = res.text().await?;
@@ -625,7 +631,7 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
 
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
-    Ok((response_data, response_body))
+    Ok((response_data, response_body, status))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
