@@ -194,7 +194,7 @@ pub struct VerificationRequirement {
     pub signature: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature_requirement: Option<SignatureRequirement>,
-    #[serde(skip_serializing_if = "Vec::is_empty")]
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub barcodes: Vec<BarcodeRequirement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pincode: Option<PincodeRequirement>,
@@ -222,7 +222,9 @@ pub struct SignatureRequirement {
 
 #[derive(Serialize, Debug, Deserialize, Clone)]
 pub struct BarcodeRequirement {
+    #[serde(default)]
     pub value: String,
+    #[serde(default)]
     pub type_of_barcode: String,
 }
 
