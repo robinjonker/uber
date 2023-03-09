@@ -56,37 +56,65 @@ pub struct CreateDeliveryRequest {
     pub dropoff_address: String, // StructuredAddress.to_string(),
     pub dropoff_name: String,
     pub dropoff_phone_number: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub manifest: String,
     pub manifest_items: Vec<ManifestItem>,
     pub pickup_address: String, // StructuredAddress.to_string(),
     pub pickup_name: String,
     pub pickup_phone_number: String,
-    pub deliverable_action: Option<String>, // check RTODO
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deliverable_action: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_business_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_seller_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_verification: Option<VerificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_reference: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_total_value: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_business_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_verification: Option<VerificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub quote_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub undeliverable_action: Option<i8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_ready_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_deadline_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_ready_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_deadline_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_dropoff_signature: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_id: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tip: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub idempotency_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub external_store_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub return_verification: Option<VerificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub test_specifications: Option<TestSpecifications>,
 }
 

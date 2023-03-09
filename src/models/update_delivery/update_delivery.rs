@@ -64,15 +64,26 @@ pub struct UpdateDeliveryResponse {
 ///
 #[derive(Serialize, Default)]
 pub struct UpdateDeliveryRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_seller_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_verification: Option<VerificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_reference: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_notes: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_verification: Option<VerificationRequirement>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_dropoff_signature: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub requires_id: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tip_by_customer: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_longitude: Option<f64>,
 }

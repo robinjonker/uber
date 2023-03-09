@@ -91,11 +91,15 @@ pub struct WaypointInfo {
 #[derive(Deserialize, Debug, Serialize, Default, Clone)]
 pub struct StructuredAddress { 
     pub street_address_1: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub street_address_2: Option<String>,
     pub city: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub state: String,
     pub zip_code: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sublocality_level_1: Option<String>,
 }
 
@@ -160,11 +164,17 @@ pub struct ManifestItem {
     pub name: String,
     pub quantity: u32,
     pub size: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dimensions: Option<Dimensions>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub price: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub must_be_upright: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub weight: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub perishability: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub preparation_time: Option<u32>,
 }
 impl ManifestItem {

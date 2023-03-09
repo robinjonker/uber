@@ -26,19 +26,31 @@ use crate::models::general::{
 #[derive(Serialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateQuoteRequest {
-    pub pickup_address: String,// StructuredAddress.to_string(),
-    pub dropoff_address: String,// StructuredAddress.to_string(),
+    pub pickup_address: String,
+    pub dropoff_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_phone_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_phone_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_ready_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_deadline_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_ready_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_deadline_dt: Option<LocalDateTime>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub manifest_total_value: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub external_store_id: Option<String>,
 }
 impl CreateQuoteRequest {
