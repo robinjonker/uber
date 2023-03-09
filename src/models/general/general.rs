@@ -194,7 +194,7 @@ pub struct VerificationRequirement {
     pub signature: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature_requirement: Option<SignatureRequirement>,
-    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    #[serde(skip_serializing_if = "Vec::is_empty", default, deserialize_with = "null_to_default")]
     pub barcodes: Vec<BarcodeRequirement>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pincode: Option<PincodeRequirement>,
@@ -253,4 +253,14 @@ pub struct TestSpecifications {
 #[derive(Serialize, Debug, Clone)]
 pub struct RoboCourierSpecification {
     pub mode: String,
+}
+
+fn null_to_default<'de, D, T>(d: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Default + Deserialize<'de>,
+{
+    let opt = Option::deserialize(d)?;
+    let val = opt.unwrap_or_else(T::default);
+    Ok(val)
 }
