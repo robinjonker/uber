@@ -779,8 +779,8 @@ pub async fn cancel_delivery(
     );
     let body = format!(
         r#"{{ 
-            "customer_id": {},
-            "delivery_id": {}
+            "customer_id": "{}",
+            "delivery_id": "{}"
         }}"#,
         customer_id,
         delivery_id
