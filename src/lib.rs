@@ -769,7 +769,7 @@ pub async fn cancel_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-) -> Result<(CancelDeliveryResponse, String), UberError> {
+) -> Result<(StatusCode, String), UberError> {
 
     let client = Client::new();
     let url = format!(
@@ -787,10 +787,17 @@ pub async fn cancel_delivery(
         .send()
         .await?;
 
-    let response_body = res.text().await?;
-    let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body)?;
+    let status = res.status();
 
-    Ok((response_data, response_body))
+    log::info!("Status Code => {}", &status);
+
+    let response_body = res.text().await?;
+
+    log::info!("Response Body: JSON => {}", &response_body);
+
+    //let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body)?;
+
+    Ok((status, response_body))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
