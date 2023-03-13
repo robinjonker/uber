@@ -777,6 +777,14 @@ pub async fn cancel_delivery(
         customer_id,
         delivery_id
     );
+    let body = format!(
+        r#"{{ 
+            "customer_id": {},
+            "delivery_id": {}
+        }}"#,
+        customer_id,
+        delivery_id
+    ); 
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
@@ -784,6 +792,7 @@ pub async fn cancel_delivery(
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
+        .body(body)
         .send()
         .await?;
 
