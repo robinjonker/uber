@@ -659,12 +659,12 @@ pub async fn get_delivery(
         customer_id,
         delivery_id
     );
-    let content_type = HeaderValue::from_str("application/json")?;
+    // let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
 
     let res = client.get(&url)
-        .header(CONTENT_TYPE, content_type)
+        // .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
         .send()
         .await?;
