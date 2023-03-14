@@ -9,6 +9,13 @@ use crate::models::general::{
     RelatedDelivery
 };
 
+#[derive(Serialize)]
+#[serde(rename_all = "snake_case")]
+pub struct CancelDeliveryRequest {
+    pub customer_id: String,
+    pub delivery_id: String
+}
+
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct CancelDeliveryResponse {
