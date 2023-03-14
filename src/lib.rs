@@ -787,7 +787,7 @@ pub async fn cancel_delivery(
     let content_type = HeaderValue::from_str("application/json")?;
     let auth_header = format!("Bearer {}", access_token);
     let authorization = HeaderValue::from_str(&auth_header)?;
-    let body = serde_json::to_string(&cancel_delivery_request)?;
+    // let body = serde_json::to_string(&cancel_delivery_request)?;
 
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
