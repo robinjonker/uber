@@ -41,26 +41,6 @@ impl Default for LocalDateTime {
     }
 }
 
-impl LocalDateTime {
-    pub fn as_naive_datetime(&self) -> NaiveDateTime {
-        self.0.naive_local()
-    }
-}
-
-impl TypeInfo for LocalDateTime {
-    fn compatible(ty: &sqlx::Type) -> bool {
-        <DateTime<Local> as TypeInfo>::compatible(ty)
-    }
-
-    fn name() -> &'static str {
-        <DateTime<Local> as TypeInfo>::name()
-    }
-
-    fn type_info() -> sqlx::Type {
-        <DateTime<Local> as TypeInfo>::type_info()
-    }
-}
-
 impl From<DateTime<Local>> for LocalDateTime {
     fn from(value: DateTime<Local>) -> Self {
         Self(value)
