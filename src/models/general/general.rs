@@ -1,5 +1,6 @@
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
+use sqlx::{Encode, Decode, FromRow, TypeInfo};
 use std::fmt;
 
 #[derive(Clone)]
@@ -37,6 +38,26 @@ impl Default for LocalDateTime {
         let default_datetime = NaiveDateTime::from_timestamp_opt(0, 0).unwrap_or_default();
         let local_datetime = Local.from_local_datetime(&default_datetime).unwrap();
         LocalDateTime(local_datetime)
+    }
+}
+
+impl LocalDateTime {
+    pub fn as_naive_datetime(&self) -> NaiveDateTime {
+        self.0.naive_local()
+    }
+}
+
+impl TypeInfo for LocalDateTime {
+    fn compatible(ty: &sqlx::Type) -> bool {
+        <DateTime<Local> as TypeInfo>::compatible(ty)
+    }
+
+    fn name() -> &'static str {
+        <DateTime<Local> as TypeInfo>::name()
+    }
+
+    fn type_info() -> sqlx::Type {
+        <DateTime<Local> as TypeInfo>::type_info()
     }
 }
 

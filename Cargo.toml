@@ -1,6 +1,6 @@
 [package]
 name = "uber_api"
-version = "0.1.45"
+version = "0.1.46"
 authors = ["robinjonker"]
 edition = "2021"
 description = "A library coded in Rust and hosted on crates.io for Uber's API. In particular, Uber Direct with their DaaS API."
@@ -21,6 +21,7 @@ serde_yaml = "0.9"
 serde_json = "1.0"
 serde_ignored = "0.1"
 serde_urlencoded = "0.7"
+sqlx = { version = "0.5.5", default-features = false, features = ["runtime-tokio-native-tls", "mysql", "chrono", "bigdecimal"] }
 
 tokio               = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time", "parking_lot"] }
 clap                = { version="3", features=["derive",  "suggestions", "color"]}
