@@ -1,7 +1,8 @@
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use chrono::{DateTime, Local};
+use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
 use std::fmt;
 
+#[derive(Clone)]
 pub struct LocalDateTime(DateTime<Local>);
 
 impl Serialize for LocalDateTime {
@@ -31,6 +32,13 @@ impl fmt::Debug for LocalDateTime {
     }
 }
 
+impl Default for LocalDateTime {
+    fn default() -> Self {
+        let default_datetime = NaiveDateTime::from_timestamp_opt(0, 0).unwrap_or_default();
+        let local_datetime = Local.from_local_datetime(&default_datetime).unwrap();
+        LocalDateTime(local_datetime)
+    }
+}
 
 impl From<DateTime<Local>> for LocalDateTime {
     fn from(value: DateTime<Local>) -> Self {
