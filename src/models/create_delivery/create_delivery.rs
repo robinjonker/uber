@@ -56,8 +56,8 @@ pub struct CreateDeliveryRequest {
     pub dropoff_address: String, // StructuredAddress.to_string(),
     pub dropoff_name: String,
     pub dropoff_phone_number: String,
-    #[serde(skip_serializing_if = "String::is_empty")]
-    pub manifest: String,
+    //#[serde(skip_serializing_if = "String::is_empty")]
+    //pub manifest: String,
     pub manifest_items: Vec<ManifestItem>,
     pub pickup_address: String, // StructuredAddress.to_string(),
     pub pickup_name: String,
@@ -102,14 +102,14 @@ pub struct CreateDeliveryRequest {
     pub dropoff_ready_dt: Option<LocalDateTime>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_deadline_dt: Option<LocalDateTime>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub requires_dropoff_signature: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub requires_id: Option<bool>,
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    //pub requires_dropoff_signature: Option<bool>,
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    //pub requires_id: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tip: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub idempotency_key: Option<String>,
+    //#[serde(skip_serializing_if = "Option::is_none")]
+    //pub idempotency_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_store_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
