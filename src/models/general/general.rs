@@ -171,6 +171,7 @@ pub struct PincodeProof {
 pub struct ManifestItem {
     pub name: String,
     pub quantity: u32,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub size: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dimensions: Option<Dimensions>,
