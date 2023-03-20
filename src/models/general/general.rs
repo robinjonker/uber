@@ -1,6 +1,5 @@
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use chrono::{DateTime, Local, NaiveDateTime, TimeZone};
-use sqlx::{Encode, Decode, FromRow, TypeInfo};
 use std::fmt;
 
 #[derive(Clone)]
