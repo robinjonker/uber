@@ -137,33 +137,33 @@ impl fmt::Display for StructuredAddress {
 
 #[derive(Deserialize, Debug)]
 pub struct VerificationProof {
-    pub signature: SignatureProof,
+    pub signature: Option<SignatureProof>,
     pub barcodes: Vec<BarcodeRequirement>,
-    pub picture: PictureProof,
-    pub identification: IdentificationProof,
-    pub pin_code: PincodeProof,
+    pub picture: Option<PictureProof>,
+    pub identification: Option<IdentificationProof>,
+    pub pin_code: Option<PincodeProof>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct SignatureProof {
-    pub image_url: String,
-    pub signer_name: String,
-    pub signer_relationship: String,
+    pub image_url: Option<String>,
+    pub signer_name: Option<String>,
+    pub signer_relationship: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct PictureProof {
-    pub image_url: String,
+    pub image_url: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct IdentificationProof {
-    pub min_age_verified: bool,
+    pub min_age_verified: Option<bool>,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct PincodeProof {
-    pub entered: String,
+    pub entered: Option<String>,
 }
 
 #[derive(Serialize, Default, Debug, Deserialize, Clone)]
