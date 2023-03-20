@@ -138,7 +138,7 @@ impl fmt::Display for StructuredAddress {
 #[derive(Deserialize, Debug)]
 pub struct VerificationProof {
     pub signature: Option<SignatureProof>,
-    pub barcodes: Vec<BarcodeRequirement>,
+    pub barcodes: Option<Vec<BarcodeRequirement>>,
     pub picture: Option<PictureProof>,
     pub identification: Option<IdentificationProof>,
     pub pin_code: Option<PincodeProof>,
