@@ -196,7 +196,7 @@ impl ManifestItem {
     }
 }
 
-#[derive(Serialize, Debug, Deserialize)]
+#[derive(Serialize, Debug, Deserialize, Default)]
 pub struct VerificationRequirement {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature: Option<bool>,

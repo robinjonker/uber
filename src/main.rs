@@ -18,7 +18,9 @@ use uber_api::{
         ManifestItem, 
         RoboCourierSpecification, 
         TestSpecifications,
-        StructuredAddress,
+        StructuredAddress, 
+        VerificationRequirement,
+        SignatureRequirement
     }
 };
 
@@ -61,7 +63,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // };
     // let dropoff_name = "Dropoff Location";
     // let dropoff_phone_number = "+1-555-555-5555";
-    // let manifest = "Delivery items";
     // let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
     // let pickup_address = StructuredAddress {
     //     street_address_1: "456 Market St".to_string(),
@@ -77,17 +78,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //         mode: "auto".to_owned()
     //     }
     // };
+    // let dropoff_verification = VerificationRequirement{
+    //     signature_requirement: Some(SignatureRequirement{
+    //         enabled: true,
+    //         collect_signer_name: true,
+    //         collect_signer_relationship: true,
+    //     }),
+    //     ..Default::default()
+    // };
     // let create_delivery_request = CreateDeliveryRequest{
     //     dropoff_address: dropoff_address.to_string(),
     //     dropoff_name: dropoff_name.to_string(),
     //     dropoff_phone_number: dropoff_phone_number.to_string(),
-    //     manifest: manifest.to_string(),
     //     manifest_items,
     //     pickup_address: pickup_address.to_string(),
     //     pickup_name: pickup_name.to_string(),
     //     pickup_phone_number: pickup_phone_number.to_string(),
     //     deliverable_action: Some("deliverable_action_meet_at_door".to_string()),
     //     test_specifications: Some(test_specifications),
+    //     dropoff_verification: Some(dropoff_verification),
     //     ..Default::default()
     // };
     // let create_delivery_response = create_delivery(&access_token, &customer_id, create_delivery_request).await?;
