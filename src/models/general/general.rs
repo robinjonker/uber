@@ -164,8 +164,8 @@ pub struct ManifestItem {
     pub dimensions: Option<Dimensions>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub price: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub must_be_upright: Option<bool>,
+    #[serde(skip_serializing_if = "should_skip_serialization_bool")]
+    pub must_be_upright: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub weight: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -173,6 +173,11 @@ pub struct ManifestItem {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub preparation_time: Option<u32>,
 }
+
+fn should_skip_serialization_bool (b: &bool) -> bool {
+    !*b
+}
+
 impl ManifestItem {
     pub fn new<T: Into<String>>(name: T, quantity: u32, size: T) -> Self {
         ManifestItem {
@@ -186,8 +191,6 @@ impl ManifestItem {
 
 #[derive(Serialize, Debug, Deserialize, Default)]
 pub struct VerificationRequirement {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub signature: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub signature_requirement: Option<SignatureRequirement>,
     #[serde(skip_serializing_if = "Vec::is_empty", default = "Vec::default", deserialize_with = "null_to_default")]

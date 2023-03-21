@@ -91,7 +91,7 @@ pub struct CreateDeliveryRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quote_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub undeliverable_action: Option<i8>,
+    pub undeliverable_action: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pickup_ready_dt: Option<LocalDateTime>,
     #[serde(skip_serializing_if = "Option::is_none")]
