@@ -53,13 +53,11 @@ use crate::models::general::{
 #[derive(Serialize, Debug, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateDeliveryRequest {
-    pub dropoff_address: String, // StructuredAddress.to_string(),
+    pub dropoff_address: String, // StructuredAddress then serde_json::to_string(&dropoff_address).unwrap()
     pub dropoff_name: String,
     pub dropoff_phone_number: String,
-    //#[serde(skip_serializing_if = "String::is_empty")]
-    //pub manifest: String,
     pub manifest_items: Vec<ManifestItem>,
-    pub pickup_address: String, // StructuredAddress.to_string(),
+    pub pickup_address: String,
     pub pickup_name: String,
     pub pickup_phone_number: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -102,14 +100,8 @@ pub struct CreateDeliveryRequest {
     pub dropoff_ready_dt: Option<LocalDateTime>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dropoff_deadline_dt: Option<LocalDateTime>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub requires_dropoff_signature: Option<bool>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub requires_id: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tip: Option<u32>,
-    //#[serde(skip_serializing_if = "Option::is_none")]
-    //pub idempotency_key: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub external_store_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -153,163 +145,4 @@ pub struct CreateDeliveryResponse {
     pub uuid: Option<String>,
     #[serde(rename = "return")]
     pub return_waypoint: Option<WaypointInfo>,
-}
-
-impl CreateDeliveryRequest {
-    pub fn new<T: Into<String>>(
-        dropoff_address: StructuredAddress, 
-        dropoff_name: T, 
-        dropoff_phone_number: T, 
-        //manifest: T, 
-        manifest_items: Vec<ManifestItem>, 
-        pickup_address: StructuredAddress, 
-        pickup_name: T, 
-        pickup_phone_number: T) -> Self {
-        CreateDeliveryRequest {
-            dropoff_address: dropoff_address.to_string(),
-            dropoff_name: dropoff_name.into(),
-            dropoff_phone_number: dropoff_phone_number.into(),
-            //manifest: manifest.into(),
-            manifest_items,
-            pickup_address: pickup_address.to_string(),
-            pickup_name: pickup_name.into(),
-            pickup_phone_number: pickup_phone_number.into(),
-            ..Default::default()
-        }
-    }
-    pub fn new_with_test<T: Into<String>>(
-        dropoff_address: StructuredAddress, 
-        dropoff_name: T, 
-        dropoff_phone_number: T, 
-        //manifest: T, 
-        manifest_items: Vec<ManifestItem>, 
-        pickup_address: StructuredAddress, 
-        pickup_name: T, 
-        pickup_phone_number: T,
-        test_specifications: TestSpecifications) -> Self {
-        CreateDeliveryRequest {
-            dropoff_address: dropoff_address.to_string(),
-            dropoff_name: dropoff_name.into(),
-            dropoff_phone_number: dropoff_phone_number.into(),
-            //manifest: manifest.into(),
-            manifest_items,
-            pickup_address: pickup_address.to_string(),
-            pickup_name: pickup_name.into(),
-            pickup_phone_number: pickup_phone_number.into(),
-            test_specifications: Some(test_specifications),
-            ..Default::default()
-        }
-    }
-}
-
-// confirm the three basic different types - based on Zulzi use case
-pub enum CreateDeliveryRequestTypes {
-    StandardDelivery {
-        dropoff_address: StructuredAddress, 
-        dropoff_name: String, 
-        dropoff_phone_number: String, 
-        //manifest: String, 
-        manifest_items: Vec<ManifestItem>, 
-        pickup_address: StructuredAddress, 
-        pickup_name: String, 
-        pickup_phone_number: String
-    },
-    VerifiableDelivery {
-        dropoff_address: StructuredAddress, 
-        dropoff_name: String, 
-        dropoff_phone_number: String, 
-        //manifest: String, 
-        manifest_items: Vec<ManifestItem>, 
-        pickup_address: StructuredAddress, 
-        pickup_name: String, 
-        pickup_phone_number: String,
-        dropoff_verification: VerificationRequirement
-    },
-    ReturnableDelivery {
-        dropoff_address: StructuredAddress, 
-        dropoff_name: String, 
-        dropoff_phone_number: String, 
-        //manifest: String, 
-        manifest_items: Vec<ManifestItem>, 
-        pickup_address: StructuredAddress, 
-        pickup_name: String, 
-        pickup_phone_number: String,
-        dropoff_verification: VerificationRequirement,
-        return_verification: VerificationRequirement
-    },
-}
-impl Into<CreateDeliveryRequest> for CreateDeliveryRequestTypes {
-    fn into(self) -> CreateDeliveryRequest {
-        match self {
-            CreateDeliveryRequestTypes::StandardDelivery {
-                dropoff_address, 
-                dropoff_name, 
-                dropoff_phone_number, 
-                //manifest, 
-                manifest_items, 
-                pickup_address, 
-                pickup_name, 
-                pickup_phone_number } => {
-                    CreateDeliveryRequest {
-                        dropoff_address: dropoff_address.to_string(), 
-                        dropoff_name, 
-                        dropoff_phone_number, 
-                        //manifest, 
-                        manifest_items, 
-                        pickup_address: pickup_address.to_string(), 
-                        pickup_name, 
-                        pickup_phone_number,
-                        ..Default::default()
-                    }
-            },
-            CreateDeliveryRequestTypes::VerifiableDelivery { 
-                dropoff_address, 
-                dropoff_name, 
-                dropoff_phone_number,
-                //manifest,
-                manifest_items, 
-                pickup_address,
-                pickup_name, 
-                pickup_phone_number,
-                dropoff_verification } => {
-                    CreateDeliveryRequest {
-                        dropoff_address: dropoff_address.to_string(),
-                        dropoff_name, 
-                        dropoff_phone_number, 
-                        //manifest, 
-                        manifest_items, 
-                        pickup_address: pickup_address.to_string(),
-                        pickup_name, 
-                        pickup_phone_number,
-                        dropoff_verification: Some(dropoff_verification),
-                        ..Default::default()
-                    }
-            },
-            CreateDeliveryRequestTypes::ReturnableDelivery { 
-                dropoff_address, 
-                dropoff_name, 
-                dropoff_phone_number,
-                //manifest,
-                manifest_items, 
-                pickup_address,
-                pickup_name, 
-                pickup_phone_number,
-                dropoff_verification,
-                return_verification} => {
-                    CreateDeliveryRequest {
-                        dropoff_address: dropoff_address.to_string(), 
-                        dropoff_name, 
-                        dropoff_phone_number, 
-                        //manifest, 
-                        manifest_items, 
-                        pickup_address: pickup_address.to_string(), 
-                        pickup_name, 
-                        pickup_phone_number,
-                        dropoff_verification: Some(dropoff_verification),
-                        return_verification: Some(return_verification),
-                        ..Default::default()
-                    }
-            }
-        }
-    }
 }

@@ -611,23 +611,23 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     let authorization = HeaderValue::from_str(&auth_header)?;
     let create_delivery_request = create_delivery_request.into();
     let body = serde_json::to_string(&create_delivery_request)?;
-
-    log::info!("JSON request body of Create Req for Uber API {:#?}", body);
-
+    
+    log::info!("JSON request body of Create Req for Uber API {}", body);
+    
     let res = client.post(&url)
         .header(CONTENT_TYPE, content_type)
         .header(AUTHORIZATION, authorization)
         .body(body)
         .send()
         .await?;
-
+    
     let status = res.status();
 
     log::info!("\nSTATUS CODE RES => {}\n", res.status());
 
     let response_body = res.text().await?;
 
-    log::info!("JSON response body of Create Req for Uber API {:#?}", response_body);
+    log::info!("JSON response body of Create Req for Uber API {}", response_body);
 
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     

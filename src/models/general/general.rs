@@ -85,7 +85,7 @@ pub struct WaypointInfo {
     pub name: String,
     pub phone_number: String,
     pub address: String,
-    pub detailed_address: StructuredAddress,
+    pub detailed_address: StructuredAddressResponse,
     pub notes: Option<String>,
     pub seller_notes: Option<String>,
     pub courier_notes: Option<String>,
@@ -97,41 +97,29 @@ pub struct WaypointInfo {
 
 #[derive(Deserialize, Debug, Serialize, Default, Clone)]
 pub struct StructuredAddress { 
-    pub street_address_1: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub street_address_2: Option<String>,
+    pub street_address: Vec<String>,
+    // pub street_address_1: String,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub street_address_2: Option<String>,
     pub city: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub state: String,
     pub zip_code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sublocality_level_1: Option<String>,
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub sublocality_level_1: Option<String>,
 }
 
-impl fmt::Display for StructuredAddress {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut address = self.street_address_1.clone();
-        if let Some(street_address_2) = &self.street_address_2 {
-            address.push_str(&format!(", {}", street_address_2));
-        }
-        write!(
-            f,
-            "{}, {}, {}, {}",
-            address,
-            self.city,
-            self.state,
-            self.zip_code
-        )?;
-        if let Some(sublocality_level_1) = &self.sublocality_level_1 {
-            write!(f, ", {}", sublocality_level_1)?;
-        }
-        if let Some(country) = &self.country {
-            write!(f, ", {}", country)?;
-        }
-        Ok(())
-    }
+#[derive(Deserialize, Debug, Serialize, Default, Clone)]
+pub struct StructuredAddressResponse { 
+    pub street_address_1: Option<String>,
+    pub street_address_2: Option<String>,
+    pub city: Option<String>,
+    pub state: Option<String>,
+    pub zip_code: Option<String>,
+    pub country: Option<String>,
+    pub sublocality_level_1: Option<String>,
 }
 
 

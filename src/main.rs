@@ -54,21 +54,33 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Access Key: => '{:#?}'", &auth_response);
 
+    // let street_address_1 = "123 Main St".to_string();
+    // let street_address_2 = "".to_string();
+    // let sublocality_level_1 = "".to_string();
+
     // let dropoff_address = StructuredAddress {
-    //     street_address_1: "123 Main St".to_string(),
+    //     street_address: vec![street_address_1, street_address_2, sublocality_level_1].into_iter().filter(|s| !s.is_empty()).collect(),
     //     city: "San Francisco".to_string(),
     //     state: "CA".to_string(),
     //     zip_code: "94103".to_string(),
-    //     ..Default::default()
+    //     country: Some("US".to_string()),
     // };
+    // let body = serde_json::to_string(&dropoff_address)?;
+    // println!("json => {}",body);
     // let dropoff_name = "Dropoff Location";
     // let dropoff_phone_number = "+1-555-555-5555";
     // let manifest_items = vec![ManifestItem::new("Robin", 1, "small")];
+
+    // let street_address_1 = "456 Market St".to_string();
+    // let street_address_2 = "".to_string();
+    // let sublocality_level_1 = "".to_string();
+
     // let pickup_address = StructuredAddress {
-    //     street_address_1: "456 Market St".to_string(),
+    //     street_address: vec![street_address_1, street_address_2, sublocality_level_1].into_iter().filter(|s| !s.is_empty()).collect(),
     //     city: "San Francisco".to_string(),
     //     state: "CA".to_string(),
     //     zip_code: "94103".to_string(),
+    //     country: Some("US".to_string()),
     //     ..Default::default()
     // };
     // let pickup_name = "Pickup Location";
@@ -87,11 +99,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     //     ..Default::default()
     // };
     // let create_delivery_request = CreateDeliveryRequest{
-    //     dropoff_address: dropoff_address.to_string(),
+    //     dropoff_address: serde_json::to_string(&dropoff_address).unwrap(),
     //     dropoff_name: dropoff_name.to_string(),
     //     dropoff_phone_number: dropoff_phone_number.to_string(),
     //     manifest_items,
-    //     pickup_address: pickup_address.to_string(),
+    //     pickup_address: serde_json::to_string(&pickup_address).unwrap(),
     //     pickup_name: pickup_name.to_string(),
     //     pickup_phone_number: pickup_phone_number.to_string(),
     //     deliverable_action: Some("deliverable_action_meet_at_door".to_string()),
@@ -143,5 +155,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-
