@@ -65,10 +65,10 @@ pub struct DeliveryStatusResponse {
 pub struct CourierUpdate {
     pub location: LatLng,
     pub kind: String,
-    pub live_mode: bool,
-    pub delivery_id: String,
-    pub job_id: String,
-    pub data: DeliveryData,
+    pub live_mode: Option<bool>,
+    pub delivery_id: Option<String>,
+    pub job_id: Option<String>,
+    pub data: Option<DeliveryData>,
 }
 
 /// # Webhook Event Definitions - DeliveryData
