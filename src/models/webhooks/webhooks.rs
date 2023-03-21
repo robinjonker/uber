@@ -6,7 +6,7 @@ use crate::models::general::{
     RelatedDelivery,
     LatLng,
     StructuredAddress,
-    VerificationProof
+    VerificationProof, StructuredAddressResponse
 };
 
 /// # Delivery Status Webhook Event Definitions
@@ -167,7 +167,7 @@ pub struct DeliveryInfo {
     pub name: Option<String>,
     pub phone_number: Option<String>,
     pub address: Option<String>,
-    pub detailed_address: Option<StructuredAddress>,
+    pub detailed_address: Option<StructuredAddressResponse>,
     pub location: Option<LatLng>,
     pub notes: Option<String>,
     pub verification: Option<VerificationProof>,
@@ -185,9 +185,9 @@ pub struct DeliveryInfo {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct OrderInfo {
-    pub id: String,
-    pub number: String,
-    pub display_name: String,
+    pub id: Option<String>,
+    pub number: Option<String>,
+    pub display_name: Option<String>,
 }
 
 /// # DeliveryData - CancellationReason
@@ -200,6 +200,6 @@ pub struct OrderInfo {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct CancellationReason {
-    pub primary_reason: String,
-    pub secondary_reason: String
+    pub primary_reason: Option<String>,
+    pub secondary_reason: Option<String>
 }

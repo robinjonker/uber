@@ -97,18 +97,13 @@ pub struct WaypointInfo {
 
 #[derive(Deserialize, Debug, Serialize, Default, Clone)]
 pub struct StructuredAddress { 
-    pub street_address: Vec<String>,
-    // pub street_address_1: String,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub street_address_2: Option<String>,
+    pub street_address: Vec<String>, // vec containing street_address_1, street_address_2 (optional), sublocality_level_1 (optional)
     pub city: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub state: String,
     pub zip_code: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
-    // #[serde(skip_serializing_if = "Option::is_none")]
-    // pub sublocality_level_1: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Serialize, Default, Clone)]
