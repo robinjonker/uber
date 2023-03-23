@@ -14,6 +14,12 @@ impl Serialize for LocalDateTime {
     }
 }// 2023-02-09T09:29:27Z
 
+impl ToString for LocalDateTime {
+    fn to_string(&self) -> String {
+        format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%SZ"))
+    }
+}
+
 impl<'de> Deserialize<'de> for LocalDateTime {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
