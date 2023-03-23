@@ -250,9 +250,10 @@ pub struct TestSpecifications {
     pub robo_courier_specification: RoboCourierSpecification,
 }
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone, Default)]
 pub struct RoboCourierSpecification {
     pub mode: String,
+    pub cancel_reason: Option<String>
 }
 
 fn null_to_default<'de, D, T>(d: D) -> Result<T, D::Error>
