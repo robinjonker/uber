@@ -10,13 +10,13 @@ impl Serialize for LocalDateTime {
         where
             S: Serializer,
     {
-        serializer.collect_str(&format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%SZ"))) // 2019-10-12T07:20:50.52Z
+        serializer.collect_str(&format!("{}", self.0.format("%Y-%m-%dT%H:%M:%SZ"))) // 2019-10-12T07:20:50.52Z
     }
 }// 2023-02-09T09:29:27Z
 
 impl ToString for LocalDateTime {
     fn to_string(&self) -> String {
-        format!("{}", self.0.format("%YYYY-%mm-%ddT%H:%M:%SZ"))
+        format!("{}", self.0.format("%Y-%m-%dT%H:%M:%SZ"))
     }
 }
 
