@@ -253,8 +253,6 @@ pub struct TestSpecifications {
 #[derive(Serialize, Debug, Clone, Default)]
 pub struct RoboCourierSpecification {
     pub mode: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cancel_reason: Option<String>
 }
 
 fn null_to_default<'de, D, T>(d: D) -> Result<T, D::Error>
