@@ -54,6 +54,9 @@ pub use models::{
     },
 };
 
+use crate::models::cancel_delivery::convert_status_to_message_cancel;
+use crate::models::create_delivery::convert_status_to_message_create;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 // 1. Auth: POST https://login.uber.com/oauth/v2/token
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -599,7 +602,7 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
     access_token: &str,
     customer_id: &str,
     create_delivery_request: T,
-) -> Result<(CreateDeliveryResponse, String, StatusCode), UberError> {
+) -> Result<(CreateDeliveryResponse, String, StatusCode, String), UberError> {
 
     let client = Client::new();
     let url = format!(
@@ -625,13 +628,17 @@ pub async fn create_delivery <T: Into<CreateDeliveryRequest>>(
 
     log::info!("\nSTATUS CODE RES => {}\n", res.status());
 
+    let status_message = convert_status_to_message_create(status);
+
+    log::info!("Status Message => {}", &status_message);
+
     let response_body = res.text().await?;
 
     log::info!("JSON response body of Create Req for Uber API {}", response_body);
 
     let response_data: CreateDeliveryResponse = serde_json::from_str(&response_body)?;
     
-    Ok((response_data, response_body, status))
+    Ok((response_data, response_body, status, status_message))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -767,7 +774,7 @@ pub async fn cancel_delivery(
     access_token: &str,
     customer_id: &str,
     delivery_id: &str,
-) -> Result<(StatusCode, String), UberError> {
+) -> Result<(StatusCode, String, String), UberError> {
 
     let client = Client::new();
     let url = format!(
@@ -787,13 +794,17 @@ pub async fn cancel_delivery(
 
     log::info!("Status Code => {}", &status);
 
+    let status_message = convert_status_to_message_cancel(status);
+
+    log::info!("Status Message => {}", &status_message);
+
     let response_body = res.text().await?;
 
     log::info!("Response Body: JSON => {}", &response_body);
 
     //let response_data: CancelDeliveryResponse = serde_json::from_str(&response_body)?;
 
-    Ok((status, response_body))
+    Ok((status, status_message, response_body))
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

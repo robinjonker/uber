@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use reqwest::StatusCode;
+
 
 use crate::models::general::{
     LocalDateTime,
@@ -145,4 +147,32 @@ pub struct CreateDeliveryResponse {
     pub uuid: Option<String>,
     #[serde(rename = "return")]
     pub return_waypoint: Option<WaypointInfo>,
+}
+
+pub fn convert_status_to_message_create(status: StatusCode) -> String {
+    match status {
+        StatusCode::OK => String::from("Success!"),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("duplicate_delivery") => String::from("An active delivery like this already exists. A pointer to the other delivery is provided."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("invalid_params") => String::from("The parameters of your request were invalid."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("unknown_location") => String::from("The specified location was not understood."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("address_undeliverable") => String::from("The specified location is not in a deliverable area."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("expired_quote") => String::from("The price quote specified has expired."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("used_quote") => String::from("The price quote specified has already been used."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("mismatched_price_quote") => String::from("The price quote specified doesn’t match the delivery."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("missing_payment") => String::from("Your account’s payment information has not been provided."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("pickup_ready_time_not_specified") => String::from("Pickup ready time must be specified when passing in pickup/dropoff windows."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("pickup_window_too_small") => String::from("The pickup window needs to be at least 10 minutes long."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("dropoff_deadline_too_early") => String::from("The dropoff deadline needs to be at least 20 minutes after the dropoff ready time."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("dropoff_deadline_before_pickup_deadline") => String::from("The dropoff deadline needs to be after the pickup deadline."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("dropoff_ready_after_pickup_deadline") => String::from("The dropoff ready time needs to be at or before the pickup deadline."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("pickup_ready_too_early") => String::from("The pickup ready time cannot be in the past."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("pickup_deadline_too_early") => String::from("The pickup deadline time needs to be at least 20 minutes from now."),
+        StatusCode::BAD_REQUEST if status.canonical_reason().unwrap_or("").contains("pickup_ready_too_late") => String::from("The pickup ready time needs to be within the next 30 days."),
+        StatusCode::PAYMENT_REQUIRED if status.canonical_reason().unwrap_or("").contains("customer_suspended") => String::from("Your account is passed due. Payment is required."),
+        StatusCode::FORBIDDEN if status.canonical_reason().unwrap_or("").contains("customer_blocked") => String::from("Your account is not allowed to create deliveries."),
+        StatusCode::UNPROCESSABLE_ENTITY if status.canonical_reason().unwrap_or("").contains("address_undeliverable_limited_couriers") => String::from("The specified location is not in a deliverable area at this time because all couriers are currently busy."),
+        StatusCode::TOO_MANY_REQUESTS if status.canonical_reason().unwrap_or("").contains("customer_limited") => String::from("Your account's limits have been exceeded."),
+        StatusCode::INTERNAL_SERVER_ERROR if status.canonical_reason().unwrap_or("") == "unknown_error" => String::from("An unknown error happened."),
+        _ => String::from("Unknown status code."),
+    }
 }

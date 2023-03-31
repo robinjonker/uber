@@ -1,4 +1,5 @@
 use serde::{Deserialize};
+use reqwest::StatusCode;
 
 use crate::models::general::{
     CourierInfo,
@@ -43,4 +44,17 @@ pub struct CancelDeliveryResponse {
     pub uuid: Option<String>,
     #[serde(rename = "return")]
     pub return_waypoint: Option<WaypointInfo>,
+}
+
+pub fn convert_status_to_message_cancel(status: StatusCode) -> String {
+    match status {
+        StatusCode::OK => String::from("Success!"),
+        StatusCode::BAD_REQUEST => String::from("Delivery cannot be cancelled."),
+        StatusCode::NOT_FOUND if status.canonical_reason().unwrap_or("").contains("customer") => String::from("Customer does not exist."),
+        StatusCode::NOT_FOUND => String::from("The requested delivery does not exist."),
+        StatusCode::REQUEST_TIMEOUT => String::from("The request timed out."),
+        StatusCode::INTERNAL_SERVER_ERROR => String::from("An unknown error happened."),
+        StatusCode::SERVICE_UNAVAILABLE => String::from("Service is currently unavailable."),
+        _ => String::from("Unknown status code."),
+    }
 }
