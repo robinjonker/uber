@@ -179,7 +179,6 @@ pub async fn create_quote(
     create_quote_request: CreateQuoteRequest,
 ) -> Result<(CreateQuoteResponse, String, StatusCode), UberError> {
 
-
     let client = Client::new();
     let url = format!(
         "https://api.uber.com/v1/customers/{}/delivery_quotes",
@@ -965,3 +964,7 @@ pub async fn pod_retrieval(
 // 15. Cancel Order POST https://api.uber.com/v1/eats/orders/{order_id}/cancel
 // 16. Delivery Status Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: dapi.status_changed
 // 17. Refund Request Notification WEBHOOK: POST https://<YOUR_WEBHOOK_URI> event_type: dapi.refund_requested
+
+// Menu
+
+// 18. Upsert Menu PUT https://api.uber.com/v2/eats/stores/{store_id}/menus
