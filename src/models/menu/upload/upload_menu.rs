@@ -7,7 +7,7 @@ use std::collections::HashMap;
 ///
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct MenuConfiguration {
+pub struct MenuConfiguration {
     menus: Vec<Menu>,
     categories: Vec<Category>,
     items: Vec<Item>,
@@ -18,7 +18,7 @@ struct MenuConfiguration {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Menu {
+pub struct Menu {
     id: String,
     title: MultiLanguageText,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -29,27 +29,27 @@ struct Menu {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct MultiLanguageText {
+pub struct MultiLanguageText {
     translations: HashMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct ServiceAvailability {
+pub struct ServiceAvailability {
     day_of_week: String,
     time_periods: Vec<TimePeriod>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct TimePeriod {
+pub struct TimePeriod {
     start_time: String,
     end_time: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Category {
+pub struct Category {
     id: String,
     title: MultiLanguageText,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -59,7 +59,7 @@ struct Category {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct MenuEntity {
+pub struct MenuEntity {
     id: String,
     #[serde(rename = "type")]
     entity_type: String,
@@ -67,7 +67,7 @@ struct MenuEntity {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Item {
+pub struct Item {
     id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     external_data: Option<String>,
@@ -108,7 +108,7 @@ struct Item {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct ModifierGroup {
+pub struct ModifierGroup {
     id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     external_data: Option<String>,
@@ -122,7 +122,7 @@ struct ModifierGroup {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct PriceRules {
+pub struct PriceRules {
     price: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     core_price: Option<u32>,
@@ -136,7 +136,7 @@ struct PriceRules {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct PriceOverride {
+pub struct PriceOverride {
     context_type: String,
     context_value: String,
     price: u32,
@@ -146,7 +146,7 @@ struct PriceOverride {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct MeasurementUnit {
+pub struct MeasurementUnit {
     measurement_type: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     length_unit: Option<String>,
@@ -158,7 +158,7 @@ struct MeasurementUnit {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct DiscountRule {
+pub struct DiscountRule {
     amount: f32,
     #[serde(rename = "type")]
     discount_type: String, // e.g., "flat" or "percentage"
@@ -166,7 +166,7 @@ struct DiscountRule {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct QuantityConstraintRules {
+pub struct QuantityConstraintRules {
     quantity: QuantityConstraint,
     #[serde(skip_serializing_if = "Option::is_none")]
     overrides: Option<Vec<QuantityConstraintOverride>>,
@@ -174,7 +174,7 @@ struct QuantityConstraintRules {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct QuantityConstraint {
+pub struct QuantityConstraint {
     #[serde(skip_serializing_if = "Option::is_none")]
     min_permitted: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -195,7 +195,7 @@ struct QuantityConstraint {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct QuantityConstraintOverride {
+pub struct QuantityConstraintOverride {
     context_type: String,
     context_value: String,
     quantity: QuantityConstraint,
@@ -203,7 +203,7 @@ struct QuantityConstraintOverride {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct SuspensionRules {
+pub struct SuspensionRules {
     #[serde(skip_serializing_if = "Option::is_none")]
     suspension: Option<Suspension>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -212,7 +212,7 @@ struct SuspensionRules {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Suspension {
+pub struct Suspension {
     #[serde(skip_serializing_if = "Option::is_none")]
     suspend_until: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -221,7 +221,7 @@ struct Suspension {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct SuspensionOverride {
+pub struct SuspensionOverride {
     context_type: String,
     context_value: String,
     suspension: Suspension,
@@ -229,7 +229,7 @@ struct SuspensionOverride {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct ModifierGroupsRules {
+pub struct ModifierGroupsRules {
     ids: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     overrides: Option<Vec<ModifierGroupsOverride>>,
@@ -237,7 +237,7 @@ struct ModifierGroupsRules {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct ModifierGroupsOverride {
+pub struct ModifierGroupsOverride {
     context_type: String,
     context_value: String,
     ids: Vec<String>,
@@ -245,7 +245,7 @@ struct ModifierGroupsOverride {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct TaxInfo {
+pub struct TaxInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     tax_rate: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -254,7 +254,7 @@ struct TaxInfo {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct NutritionalInfo {
+pub struct NutritionalInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     calories: Option<EnergyInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -289,14 +289,14 @@ struct NutritionalInfo {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct EnergyInfo {
+pub struct EnergyInfo {
     energy_interval: Interval,
     display_type: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct MeasurementInterval {
+pub struct MeasurementInterval {
     measurement_type: String,
     weight_interval: WeightInterval,
     volume_interval: VolumeInterval,
@@ -305,14 +305,14 @@ struct MeasurementInterval {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct WeightInterval {
+pub struct WeightInterval {
     interval: Interval,
     weight: Weight,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Interval {
+pub struct Interval {
     lower: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     upper: Option<u32>,
@@ -320,53 +320,53 @@ struct Interval {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Weight {
+pub struct Weight {
     unit_type: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct VolumeInterval {
+pub struct VolumeInterval {
     interval: Interval,
     volume: Volume,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Volume {
+pub struct Volume {
     unit_type: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct CountInterval {
+pub struct CountInterval {
     interval: Interval,
     count: Count,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Count {
+pub struct Count {
     unit_type: String,
     custom_unit: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct NutrientInfo {
+pub struct NutrientInfo {
     amount: WeightInterval,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct DishInfo {
+pub struct DishInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     classifications: Option<Classifications>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct Classifications {
+pub struct Classifications {
     #[serde(skip_serializing_if = "Option::is_none")]
     can_serve_alone: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -389,26 +389,26 @@ struct Classifications {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct DietaryLabelInfo {
+pub struct DietaryLabelInfo {
     labels: Vec<String> // VEGAN, VEGETARIAN, GLUTEN_FREE
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct FoodBusinessOperator {
+pub struct FoodBusinessOperator {
     name: String,
     address: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct VisibilityInfo {
+pub struct VisibilityInfo {
     hours: VisibilityHours,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct VisibilityHours {
+pub struct VisibilityHours {
     #[serde(skip_serializing_if = "Option::is_none")]
     start_date: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -418,27 +418,27 @@ struct VisibilityHours {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct HoursOfWeek {
+pub struct HoursOfWeek {
     day_of_week: String,
     time_periods: Vec<TimePeriod>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct TaxLabelsRuleSet {
+pub struct TaxLabelsRuleSet {
     default_value: TaxLabelsInfo,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct TaxLabelsInfo {
+pub struct TaxLabelsInfo {
     labels: Vec<String>,
     source: String,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct ProductInfo {
+pub struct ProductInfo {
     target_market: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     gtin: Option<String>,
@@ -456,7 +456,7 @@ struct ProductInfo {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct BundledItems {
+pub struct BundledItems {
     item_id: String,
     core_price: u32,
     included_quantity: u32,
@@ -464,7 +464,7 @@ struct BundledItems {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct BeverageInfo {
+pub struct BeverageInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     caffeine_amount: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -475,14 +475,14 @@ struct BeverageInfo {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct CoffeeInfo {
+pub struct CoffeeInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     coffee_bean_origin: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct PhysicalPropertiesInfo {
+pub struct PhysicalPropertiesInfo {
     reusable_packaging: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     storage_instructions: Option<String>,
@@ -490,13 +490,13 @@ struct PhysicalPropertiesInfo {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct SellingInfo {
+pub struct SellingInfo {
     selling_options: Vec<SellingOption>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct SellingOption {
+pub struct SellingOption {
     #[serde(skip_serializing_if = "Option::is_none")]
     sold_by_unit: Option<MeasurementUnit>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -507,7 +507,7 @@ struct SellingOption {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct SellingQuantityConstraint {
+pub struct SellingQuantityConstraint {
     #[serde(skip_serializing_if = "Option::is_none")]
     min_permitted: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -520,7 +520,7 @@ struct SellingQuantityConstraint {
 
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
-struct PricedByToSoldByUnitConversionInfo {
+pub struct PricedByToSoldByUnitConversionInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
     conversion_rate: Option<f32>,
 }
