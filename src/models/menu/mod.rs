@@ -1,3 +1,3 @@
-mod upload;
+pub mod upload;
 
 pub use upload::*;
