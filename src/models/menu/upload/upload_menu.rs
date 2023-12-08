@@ -4,6 +4,7 @@ use std::collections::HashMap;
 /// # Request Parameters
 ///
 /// up-to-date documentation can be found here -> https://developer.uber.com/docs/eats/references/api/v2/put-eats-stores-storeid-menu
+/// endpoint -> https://api.uber.com/v2/eats/stores/{store_id}/menus
 ///
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
@@ -101,7 +102,7 @@ pub struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub physical_properities_info: Option<PhysicalPropertiesInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub medication_info: Option<PhysicalPropertiesInfo>,
+    pub medication_info: Option<MedicationInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub selling_info: Option<SellingInfo>,
 }
@@ -486,6 +487,12 @@ pub struct PhysicalPropertiesInfo {
     pub reusable_packaging: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub storage_instructions: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub struct MedicationInfo {
+    pub medical_prescription_required: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Default)]
