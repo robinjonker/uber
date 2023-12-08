@@ -100,7 +100,7 @@ pub struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub beverage_info: Option<BeverageInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub physical_properities_info: Option<PhysicalPropertiesInfo>,
+    pub physical_properties_info: Option<PhysicalPropertiesInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub medication_info: Option<MedicationInfo>,
     #[serde(skip_serializing_if = "Option::is_none")]
