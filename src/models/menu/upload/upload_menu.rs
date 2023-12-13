@@ -84,6 +84,7 @@ pub struct Item {
     pub suspension_info: Option<SuspensionRules>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub modifier_group_ids: Option<ModifierGroupsRules>,
+    #[serde(default)]
     pub tax_info: TaxInfo,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nutritional_info: Option<NutritionalInfo>,
