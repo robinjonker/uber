@@ -440,7 +440,8 @@ pub struct TaxLabelsInfo {
 #[derive(Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct ProductInfo {
-    pub target_market: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target_market: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gtin: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
