@@ -12,7 +12,7 @@ pub struct PODRetrievalResponse {
 /// |waypoint|	string|	Waypoint can be “pickup” or “dropoff” or “return”.|
 /// |type|string|	Type can be “picture” or “signature” or “pincode”.|
 ///
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct PODRetrievalRequest {
     pub waypoint: String,
     pub type_of_waypoint: String,

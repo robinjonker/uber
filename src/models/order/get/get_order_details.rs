@@ -5,7 +5,7 @@ use serde::{Serialize, Deserialize};
 /// up-to-date documentation can be found here -> https://developer.uber.com/docs/eats/references/api/v2/get-eats-order-orderid
 /// endpoint -> https://api.uber.com/v2/eats/order/{order_id}
 ///
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct GetOrderDetailsResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -43,7 +43,7 @@ pub struct GetOrderDetailsResponse {
     pub order_manager_client_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Store {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -58,7 +58,7 @@ pub struct Store {
     pub merchant_store_id: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Eater {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -75,7 +75,7 @@ pub struct Eater {
     pub delivery: Option<Delivery>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Delivery {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -87,7 +87,7 @@ pub struct Delivery {
     pub notes: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Location {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -109,7 +109,7 @@ pub struct Location {
     pub title: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct EatsDelivery {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -130,7 +130,7 @@ pub struct EatsDelivery {
     pub phone_code: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Vehicle {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -149,7 +149,7 @@ pub struct Vehicle {
     pub passcode: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Payment {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -160,7 +160,7 @@ pub struct Payment {
     pub promotions: Option<Promotions>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Charges {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -199,7 +199,7 @@ pub struct Charges {
     pub marketplace_fee_due_to_uber: Option<Money>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Money {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -210,7 +210,7 @@ pub struct Money {
     pub formatted_amount: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Accounting {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -219,7 +219,7 @@ pub struct Accounting {
     pub tax_reporting: Option<TaxReporting>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxRemittance {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -232,7 +232,7 @@ pub struct TaxRemittance {
     pub small_order_fee_tax: Option<RemittanceInfo>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct RemittanceInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -245,14 +245,14 @@ pub struct RemittanceInfo {
     pub eater: Option<Vec<PayeeDetail>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct PayeeDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<Money>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxReporting {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -263,7 +263,7 @@ pub struct TaxReporting {
     pub destination: Option<TaxLocation>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxBreakdown {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -274,7 +274,7 @@ pub struct TaxBreakdown {
     pub promotions: Option<Vec<TaxInfo>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -292,7 +292,7 @@ pub struct TaxInfo {
     pub taxes: Option<Vec<Tax>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Tax {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -309,7 +309,7 @@ pub struct Tax {
     pub tax_remittance: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Jurisdiction {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -318,7 +318,7 @@ pub struct Jurisdiction {
     pub name: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Imposition {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -327,7 +327,7 @@ pub struct Imposition {
     pub name: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxLocation {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -338,14 +338,14 @@ pub struct TaxLocation {
     pub postal_code: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Promotions {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub promotions: Option<Vec<Promotion>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Promotion {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -362,7 +362,7 @@ pub struct Promotion {
     pub discount_items: Option<Vec<DiscountItem>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct DiscountItem {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -373,7 +373,7 @@ pub struct DiscountItem {
     pub discount_amount_applied: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Cart {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -384,7 +384,7 @@ pub struct Cart {
     pub fulfillment_issues: Option<FulfillmentIssue>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Item {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -415,14 +415,14 @@ pub struct Item {
     pub tax_info: Option<TaxI>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct TaxI {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub labels: Option<Vec<String>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct ItemPrice {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -435,7 +435,7 @@ pub struct ItemPrice {
     pub base_total_price: Option<Money>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct ModifierGroup {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -450,14 +450,14 @@ pub struct ModifierGroup {
     pub removed_items: Option<Vec<Item>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct SpecialRequests {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allergy: Option<Allergy>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Allergy {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -466,7 +466,7 @@ pub struct Allergy {
     pub allergy_instructions: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Allergen {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -476,7 +476,7 @@ pub struct Allergen {
     pub freeform_text: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct FulfillmentAction {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -485,7 +485,7 @@ pub struct FulfillmentAction {
     pub item_substitutes: Option<Vec<Item>>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct FulfillmentIssue {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -500,7 +500,7 @@ pub struct FulfillmentIssue {
     pub item_substitute: Option<Item>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct ItemAvailabilityInfo {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -509,14 +509,14 @@ pub struct ItemAvailabilityInfo {
     pub items_available: Option<u32>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct Packaging {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disposable_items: Option<DisposableItems>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct DisposableItems {
     #[serde(skip_serializing_if = "Option::is_none")]

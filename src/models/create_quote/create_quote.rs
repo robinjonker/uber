@@ -23,7 +23,7 @@ use crate::models::general::{
 /// | manifest_total_value | integer | Value (in US cents) of the items in the delivery. i.e.: $10.99 => 1099. |
 /// | external_store_id | string | (Optional) Unique identifier used by our Partners to reference a Store or Location |
 ///
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct CreateQuoteRequest {
     pub pickup_address: String,

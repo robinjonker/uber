@@ -7,7 +7,7 @@ use crate::models::menu::{BeverageInfo, Classifications, MedicationInfo, Nutriti
 /// up-to-date documentation can be found here -> https://developer.uber.com/docs/eats/references/api/v2/post-eats-stores-storeid-menus-items-itemid
 /// endpoint -> https://api.uber.com/v2/eats/stores/{store_id}/menus/items/{item_id}
 ///
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct UpdateItemConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
